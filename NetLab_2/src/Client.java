@@ -28,26 +28,26 @@ public class Client {
 
         try (Socket s = new Socket(serverAddr, port);
              FileInputStream filestream = new FileInputStream(file); //in
-             OutputStream socketOut = s.getOutputStream(); //don't forget to close
-             InputStream socketIn = s.getInputStream())
+             OutputStream socketOut = s.getOutputStream();
+             DataOutputStream socketDataOut = new DataOutputStream(socketOut); //don't forget to close
+             InputStream socketIn = s.getInputStream();
+             DataInputStream socketDataIn = new DataInputStream(socketIn))
         {
             //передача имени (UTF-8)
             String fileName = file.getName(); //<= 4096 bytes - server should have such a buffer!
-            byte[] buf = fileName.getBytes("UTF-8");
-            socketOut.write(buf); //sending - done
-
-            //receive confirmation!!!
+            socketDataOut.writeUTF(fileName);
 
             //передача размера файла
             /*Long fileLength = file.length(); //<=1tb = 11 bytes in. NO - 6 bytes in binary representation
             BigInteger bt = new BigInteger(fileLength.toString());
             buf = bt.toByteArray();
-            socketOut.write(buf);
+            socketOut.write(buf);*/
+            socketDataOut.writeLong(file.length());
 
             //receive confirmation!
 
             //передача самого файла
-            buf = new byte[8192];
+            /*buf = new byte[8192];
             int count;
             while((count = filestream.read(buf)) > 0)
             {

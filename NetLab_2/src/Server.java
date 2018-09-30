@@ -47,15 +47,27 @@ public class Server implements Runnable
     public void run()
     {
         try(OutputStream socketOut = s.getOutputStream();
-            InputStream socketIn = s.getInputStream())
+            InputStream socketIn = s.getInputStream();
+            DataOutputStream socketDataOut = new DataOutputStream(socketOut);
+            DataInputStream socketDataIn = new DataInputStream(socketIn))
         {
             byte[] buf = new byte[4096];
             int count;
-            while((count = socketIn.read(buf)) != -1)
+            String fileName = socketDataIn.readUTF();
+            /*while((count = socketIn.read(buf)) != -1)
             {
-                //socketOut.write(buf, 0, count);
-                System.out.print(new String(buf, "UTF-8"));
-            }
+
+                //System.out.print(new String(buf, "UTF-8"));
+                fileName += new String(buf, "UTF-8");
+                System.out.println(count);
+                //System.out.println();
+            }*/
+
+            //socketOut.write(100);
+            System.out.println("File name: " + fileName);
+
+            long fileSize = socketDataIn.readLong();
+            System.out.println("File size: " + fileSize);
         }
         catch (IOException e)
         {
