@@ -44,16 +44,19 @@ public class Client {
             socketOut.write(buf);*/
             socketDataOut.writeLong(file.length());
 
-            //receive confirmation!
 
             //передача самого файла
-            /*buf = new byte[8192];
+            byte[] buf = new byte[8192];
             int count;
             while((count = filestream.read(buf)) > 0)
             {
                 socketOut.write(buf, 0, count);
-            } //sending - done*/
+            } //sending - done
 
+
+            int msg = socketIn.read();
+            if(msg == 100)
+                System.out.println("Succesfully sent " + fileName);
 
         }
         catch(FileNotFoundException e)

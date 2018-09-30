@@ -51,7 +51,7 @@ public class Server implements Runnable
             DataOutputStream socketDataOut = new DataOutputStream(socketOut);
             DataInputStream socketDataIn = new DataInputStream(socketIn))
         {
-            byte[] buf = new byte[4096];
+            //byte[] buf = new byte[4096];
             int count;
             String fileName = socketDataIn.readUTF();
             /*while((count = socketIn.read(buf)) != -1)
@@ -68,6 +68,22 @@ public class Server implements Runnable
 
             long fileSize = socketDataIn.readLong();
             System.out.println("File size: " + fileSize);
+
+            File downloaded = new File("uploads/" + fileName);
+            downloaded.getParentFile().mkdirs();
+
+            downloaded.createNewFile(); //what if such a file exists already? should I delete it or what?
+            FileOutputStream filestream = new FileOutputStream(downloaded);
+
+            byte[] buf = new byte[8192];
+            while(fileSize > 0)
+            {
+                count = socketIn.read(buf);
+                filestream.write(buf, 0, count);
+                fileSize -= count;
+            }
+            byte msg = 100;
+            socketOut.write(msg);
         }
         catch (IOException e)
         {
