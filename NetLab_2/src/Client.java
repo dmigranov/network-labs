@@ -27,9 +27,9 @@ public class Client {
         File file = new File(path);
 
         try (Socket s = new Socket(serverAddr, port);
-             FileInputStream filestream = new FileInputStream(file); //in
+             FileInputStream filestream = new FileInputStream(file);
              OutputStream socketOut = s.getOutputStream();
-             DataOutputStream socketDataOut = new DataOutputStream(socketOut); //don't forget to close
+             DataOutputStream socketDataOut = new DataOutputStream(socketOut);
              InputStream socketIn = s.getInputStream();
              DataInputStream socketDataIn = new DataInputStream(socketIn))
         {
@@ -38,12 +38,7 @@ public class Client {
             socketDataOut.writeUTF(fileName);
 
             //передача размера файла
-            /*Long fileLength = file.length(); //<=1tb = 11 bytes in. NO - 6 bytes in binary representation
-            BigInteger bt = new BigInteger(fileLength.toString());
-            buf = bt.toByteArray();
-            socketOut.write(buf);*/
             socketDataOut.writeLong(file.length());
-
 
             //передача самого файла
             byte[] buf = new byte[8192];
