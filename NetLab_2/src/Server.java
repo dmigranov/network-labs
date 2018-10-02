@@ -23,7 +23,7 @@ public class Server implements Runnable
         try(ServerSocket server = new ServerSocket(port)) { //auto-closeable
              //IP localhost? //backlog = 50
             System.out.println("The server started working");
-            for(;/*i<50*/; threadNumber.getAndIncrement())
+            for(;/*i<50*/; threadNumber.incrementAndGet())
             {
                 new Server(server.accept(), threadNumber);
             }
@@ -49,6 +49,8 @@ public class Server implements Runnable
     @Override
     public void run()
     {
+        File downloaded = null;
+        FileOutputStream filestream = null;
         try(OutputStream socketOut = s.getOutputStream();
             InputStream socketIn = s.getInputStream();
             DataOutputStream socketDataOut = new DataOutputStream(socketOut);
@@ -61,21 +63,32 @@ public class Server implements Runnable
             long fileSize = socketDataIn.readLong();
 
 
-            File downloaded = new File("uploads/" + fileName);
+            downloaded = new File("uploads/" + fileName);
             downloaded.getParentFile().mkdirs();
 
             downloaded.createNewFile(); //what if such a file exists already? should I delete it or what?
-            FileOutputStream filestream = new FileOutputStream(downloaded);
+            filestream = new FileOutputStream(downloaded, false);
 
             //Timer speedTimer = new Timer();
 
             long periodStart = System.currentTimeMillis(), start = periodStart ;
             int allCount = 0, speedCount = 0;
             byte[] buf = new byte[8192];
+            //s.setSoTimeout(3000);
             while(allCount < fileSize)
             {
+
+
+                //try {
                 count = socketIn.read(buf);
+                /*}
+                catch(SocketTimeoutException ste)/{
+                    continue;
+                }*/
                 filestream.write(buf, 0, count);
+
+                allCount += count;
+                speedCount += count;
                 long now = System.currentTimeMillis(), diff = now - periodStart;
                 if(diff >= 3000)
                 {
@@ -83,19 +96,38 @@ public class Server implements Runnable
                     periodStart = now;
                     speedCount = 0;
                 }
-                allCount += count;
-                speedCount += count;
+
             }
             long finish = System.currentTimeMillis();
             byte msg = 100;
             socketOut.write(msg);
             filestream.close();
             System.out.println("Server Thread №" + number + ": Successfully downloaded " + fileName + " with average speed " + fileSize/(finish - start) + " bytes per second in " + (finish-start)/1000.0+ " seconds");
-            threadNumber.decrementAndGet();
+
+        }
+        catch (SocketException e)
+        {
+            //System.err.println("Server Thread №" + number + ": Socket error: " + e.getMessage());
+            if(filestream!= null)
+                try {
+                    filestream.close();
+                    if(downloaded.exists())
+                        downloaded.delete();
+                }
+                catch (IOException e2)
+                {
+                    System.err.println("Server Thread №" + number + ": Can't close file output stream: " + e2.getMessage());
+                }
+
+            System.err.println("Server Thread №" + number + ": Socket error: " + e.getMessage());
         }
         catch (IOException e)
         {
-            System.err.println("Server Thread №" + number + ": Can't get streams: " + e.getMessage());
+            System.err.println("Server Thread №" + number + ": Connection error: " + e.getMessage());
+        }
+        finally
+        {
+            threadNumber.decrementAndGet();
         }
 
     }
