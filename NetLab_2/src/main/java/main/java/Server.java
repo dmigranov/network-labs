@@ -20,12 +20,10 @@ public class Server implements Runnable
         }
 
 
-       // ServerSocket server;
         int port = Integer.parseInt(args[0]);
         try(ServerSocket server = new ServerSocket(port)) { //auto-closeable
-             //IP localhost? //backlog = 50
             System.out.println("The server started working");
-            for(;/*i<50*/; threadNumber.incrementAndGet())
+            for(;; threadNumber.incrementAndGet())
             {
                 new Server(server.accept(), threadNumber);
             }
@@ -52,7 +50,7 @@ public class Server implements Runnable
     public void run()
     {
         File downloaded = null;
-        FileOutputStream filestream = null;
+        FileOutputStream fileStream = null;
         try(OutputStream socketOut = s.getOutputStream();
             InputStream socketIn = s.getInputStream();
             DataOutputStream socketDataOut = new DataOutputStream(socketOut);
@@ -69,9 +67,8 @@ public class Server implements Runnable
             downloaded.getParentFile().mkdirs();
 
             downloaded.createNewFile(); //what if such a file exists already? should I delete it or what?
-            filestream = new FileOutputStream(downloaded, false);
+            fileStream = new FileOutputStream(downloaded, false);
 
-            //Timer speedTimer = new Timer();
 
             long periodStart = System.currentTimeMillis(), start = periodStart ;
             int allCount = 0, speedCount = 0;
@@ -87,7 +84,7 @@ public class Server implements Runnable
                 catch(SocketTimeoutException ste)/{
                     continue;
                 }*/
-                filestream.write(buf, 0, count);
+                fileStream.write(buf, 0, count);
 
                 allCount += count;
                 speedCount += count;
@@ -103,16 +100,16 @@ public class Server implements Runnable
             long finish = System.currentTimeMillis();
             byte msg = 100;
             socketOut.write(msg);
-            filestream.close();
+            fileStream.close();
             System.out.println("Server Thread №" + number + ": Successfully downloaded " + fileName + " with average speed " + fileSize/(finish - start) + " bytes per second in " + (finish-start)/1000.0+ " seconds");
 
         }
         catch (SocketException e)
         {
             //System.err.println("Server Thread №" + number + ": Socket error: " + e.getMessage());
-            if(filestream!= null)
+            if(fileStream!= null)
                 try {
-                    filestream.close();
+                    fileStream.close();
                     if(downloaded.exists())
                         downloaded.delete();
                 }

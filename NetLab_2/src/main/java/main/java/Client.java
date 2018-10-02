@@ -35,7 +35,7 @@ public class Client {
              DataInputStream socketDataIn = new DataInputStream(socketIn))
         {
             //передача имени (UTF-8)
-            String fileName = file.getName(); //<= 4096 bytes - server should have such a buffer!
+            String fileName = file.getName();
             socketDataOut.writeUTF(fileName);
 
             //передача размера файла
@@ -52,7 +52,7 @@ public class Client {
 
             int msg = socketIn.read();
             if(msg == 100)
-                System.out.println("Succesfully sent " + fileName);
+                System.out.println("Successfully sent " + fileName);
 
         }
         catch(FileNotFoundException e)
