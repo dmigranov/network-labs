@@ -71,7 +71,7 @@ public class Server implements Runnable
 
 
             long periodStart = System.currentTimeMillis(), start = periodStart ;
-            int allCount = 0, speedCount = 0;
+            long allCount = 0, speedCount = 0;
             byte[] buf = new byte[8192];
             //s.setSoTimeout(3000);
             while(allCount < fileSize)
@@ -91,7 +91,7 @@ public class Server implements Runnable
                 long now = System.currentTimeMillis(), diff = now - periodStart;
                 if(diff >= 3000)
                 {
-                    System.out.println("Server Thread №" + number + ": Speed right now is " + speedCount/diff + " bytes per second");
+                    System.out.println("Server Thread №" + number + ": Speed right now is " + 1000*speedCount/diff + " bytes per second (" + speedCount + " bytes)");
                     periodStart = now;
                     speedCount = 0;
                 }
@@ -101,7 +101,7 @@ public class Server implements Runnable
             byte msg = 100;
             socketOut.write(msg);
             fileStream.close();
-            System.out.println("Server Thread №" + number + ": Successfully downloaded " + fileName + " with average speed " + fileSize/(finish - start) + " bytes per second in " + (finish-start)/1000.0+ " seconds");
+            System.out.println("Server Thread №" + number + ": Successfully downloaded " + fileName + " with average speed " + 1000*fileSize/(finish - start) + " bytes per second in " + (finish-start)/1000.0+ " seconds");
 
         }
         catch (SocketException e)
