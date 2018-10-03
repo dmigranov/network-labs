@@ -1,8 +1,7 @@
-package main.java;
+
 
 import java.io.*;
 import java.net.*;
-import java.util.Timer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server implements Runnable
@@ -41,7 +40,7 @@ public class Server implements Runnable
         this.number = number;
 
         Thread t = new Thread(this);
-        t.setDaemon(true);
+        //t.setDaemon(true);
         t.start();
     }
 
