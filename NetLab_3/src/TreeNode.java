@@ -1,16 +1,25 @@
+import java.net.InetAddress;
+
 public class TreeNode
 {
-    public static void main(String[] args)
+    private TreeNode parent;
+    private String nodeName;
+    private double lossQuota;
+    private int ownPort;
+
+    public TreeNode(String nodeName, double lossQuota, int ownPort)
     {
-        String nodeName;
-        double lossQuota;
-        if(args.length < 3)
-        {
-            System.err.println("Not enough arguments");
-            System.exit(1);
-        }
-        nodeName = args[0];
-        lossQuota = Double.parseDouble(args[1]); //0 <= lQ <= 1 ?
-        int port = Integer.parseInt(args[2]);
+        this.nodeName = nodeName;
+        this.lossQuota = lossQuota;
+        this.ownPort = ownPort;
+        parent = null;
+    }
+
+    public TreeNode(String nodeName, double lossQuota, int ownPort, InetAddress parentIP, int parentPort)
+    {
+        this.nodeName = nodeName;
+        this.lossQuota = lossQuota;
+        this.ownPort = ownPort;
+        parent = null;
     }
 }
