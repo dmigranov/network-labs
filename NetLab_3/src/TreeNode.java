@@ -8,7 +8,7 @@ public class TreeNode
 {
     //private TreeNode parent = null;
 
-    private DatagramSocket socket = null;
+    private DatagramSocket socket = null; //shall be closed in CR or CW
 
     private String nodeName;
     private double lossQuota;
@@ -26,15 +26,17 @@ public class TreeNode
         this.nodeName = nodeName;
         this.lossQuota = lossQuota;
         this.ownPort = ownPort;
-        /*try(DatagramSocket socket = new DatagramSocket(ownPort))
+
+
+        try
         {
-            this.socket = socket;
+            socket = new DatagramSocket(ownPort);
         }
         catch(SocketException e)
         {
             System.err.println(e.getMessage());
             System.exit(3);
-        }*/
+        }
 
 
     }
@@ -74,10 +76,6 @@ public class TreeNode
         try {
             socket.send(packet);
 
-
-
-
-            socket.close();
         }
         catch(IOException e)
         {
@@ -108,6 +106,11 @@ public class TreeNode
     public InetSocketAddress getParentAddress()
     {
         return parentAddress;
+    }
+
+    public DatagramSocket getSocket()
+    {
+        return socket;
     }
 }
 

@@ -23,8 +23,7 @@ public class ChatWriter// implements Runnable
     public void run() {
         DatagramPacket packet; //TODO: change size? size = 508? 512? 500? fragmentation...
         byte [] data;
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            DatagramSocket socket = new DatagramSocket(node.getOwnPort()))
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
         {
             String str;
             while((str = br.readLine()) != null)
@@ -43,7 +42,7 @@ public class ChatWriter// implements Runnable
                     packet = new DatagramPacket(data, data.length, node.getParentAddress());
 
                     //try //catch inside of while?
-                    socket.send(packet); //TODO: Acknowledgement!!!!!
+                    node.getSocket().send(packet); //TODO: Acknowledgement!!!!!
                 }
                //send to children
 
@@ -53,12 +52,14 @@ public class ChatWriter// implements Runnable
         catch(SocketException e)
         {
 
-            System.err.println(e.getMessage());
+            //System.err.println(e.getMessage());
+            e.printStackTrace();
             System.exit(3);
         }
         catch(IOException e)
         {
-            System.err.println(e.getMessage());
+            //System.err.println(e.getMessage());
+            e.printStackTrace();
             System.exit(5);
         }
 
