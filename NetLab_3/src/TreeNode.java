@@ -26,7 +26,7 @@ public class TreeNode
         this.nodeName = nodeName;
         this.lossQuota = lossQuota;
         this.ownPort = ownPort;
-        try(DatagramSocket socket = new DatagramSocket(ownPort))
+        /*try(DatagramSocket socket = new DatagramSocket(ownPort))
         {
             this.socket = socket;
         }
@@ -34,7 +34,7 @@ public class TreeNode
         {
             System.err.println(e.getMessage());
             System.exit(3);
-        }
+        }*/
 
 
     }
@@ -98,6 +98,11 @@ public class TreeNode
     public int getOwnPort()
     {
         return ownPort;
+    }
+
+    public boolean isRoot()
+    {
+        return isRoot;
     }
 }
 
