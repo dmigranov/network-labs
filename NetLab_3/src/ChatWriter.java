@@ -23,19 +23,29 @@ public class ChatWriter// implements Runnable
     public void run() {
         DatagramPacket packet; //TODO: change size? size = 508? 512? 500? fragmentation...
         byte [] data;
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            DatagramSocket socket = new DatagramSocket(node.getOwnPort()))
         {
             String str;
             while((str = br.readLine()) != null)
             {
                 //System.out.println(str);
-                data = str.getBytes("UTF-8");
+                byte[] strBytes = str.getBytes("UTF-8");
+                data = new byte[strBytes.length + 1];
+                data[0] = 10;
+
+                //TODO: node name, don't forget about it!!!
+
+                System.arraycopy(strBytes, 0, data, 1, strBytes.length);
                 if(!node.isRoot())
                 {
-                    //send to parent
-                }
+                    //System.out.println("I'm here");
+                    packet = new DatagramPacket(data, data.length, node.getParentAddress());
 
-                //send to children
+                    //try //catch inside of while?
+                    socket.send(packet); //TODO: Acknowledgement!!!!!
+                }
+               //send to children
 
             }
 
@@ -48,7 +58,7 @@ public class ChatWriter// implements Runnable
         }
         catch(IOException e)
         {
-            System.err.println("Can't create a System.in reader!");
+            System.err.println(e.getMessage());
             System.exit(5);
         }
 

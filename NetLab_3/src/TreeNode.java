@@ -15,7 +15,7 @@ public class TreeNode
     private int ownPort;
     //private InetAddress parentIP = null;
     private InetSocketAddress parentAddress = null;
-    private int parentPort = 0;
+    //private int parentPort = 0;
     //private List<InetSocketAddress> children = new ArrayList<>();
     private List<InetSocketAddress> children = new CopyOnWriteArrayList<>(); //is it needed???
     private boolean isRoot = true;
@@ -45,7 +45,7 @@ public class TreeNode
         this.lossQuota = lossQuota;
         this.ownPort = ownPort;
         this.parentAddress = new InetSocketAddress(parentIP, parentPort);
-        this.parentPort = parentPort;
+        //this.parentPort = parentPort;
         isRoot = false;
 
         try
@@ -103,6 +103,11 @@ public class TreeNode
     public boolean isRoot()
     {
         return isRoot;
+    }
+
+    public InetSocketAddress getParentAddress()
+    {
+        return parentAddress;
     }
 }
 
