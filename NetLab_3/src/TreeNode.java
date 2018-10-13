@@ -48,9 +48,9 @@ public class TreeNode
         this.parentPort = parentPort;
         isRoot = false;
 
-        try(DatagramSocket socket = new DatagramSocket(ownPort))
+        try
         {
-            this.socket = socket;
+            socket = new DatagramSocket(ownPort);
         }
         catch(SocketException e)
         {
@@ -69,10 +69,15 @@ public class TreeNode
 
 
         byte[] msg = new byte[1];
-        msg[0] = 1;
+        msg[0] = 100;
         DatagramPacket packet = new DatagramPacket(msg, msg.length, parentIP, parentPort);
         try {
             socket.send(packet);
+
+
+
+
+            socket.close();
         }
         catch(IOException e)
         {
@@ -87,15 +92,11 @@ public class TreeNode
 
     }
 
-    public DatagramSocket getSocket()
-    {
-        return socket;
-    }
 
 
-    public boolean isRoot()
+    public int getOwnPort()
     {
-        return isRoot;
+        return ownPort;
     }
 }
 

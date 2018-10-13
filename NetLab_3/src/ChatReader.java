@@ -5,6 +5,7 @@ public class ChatReader implements Runnable
     TreeNode node = null;
 
 
+
     public ChatReader(TreeNode node)
     {
         this.node = node;

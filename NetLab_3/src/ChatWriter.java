@@ -6,7 +6,8 @@ import java.io.BufferedReader;
 public class ChatWriter// implements Runnable
 {
 
-    TreeNode node = null;
+    private TreeNode node = null;
+
 
     public ChatWriter(TreeNode node)
     {
@@ -20,10 +21,10 @@ public class ChatWriter// implements Runnable
         DatagramPacket packet = new DatagramPacket(new byte[1], 1); //change size!!!
         while(true)
         {
-            try
+            try(DatagramSocket socket = new DatagramSocket(node.getOwnPort()))
             {
-                node.getSocket().receive(packet);
-                System.out.println(packet.getData());
+                socket.receive(packet);
+                System.out.println("New child connected: " + packet.getAddress() + ":" + packet.getPort());
 
 
             }

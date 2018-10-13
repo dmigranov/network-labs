@@ -10,8 +10,7 @@ public class Main {
             System.err.println("Not enough arguments");
             System.exit(1);
         }
-        ChatReader chatReader = null;
-        ChatWriter chatWriter = null;
+        TreeNode node = null;
 
         String nodeName = args[0];
         double lossQuota = Double.parseDouble(args[1]); //0 <= lQ <= 1 ?
@@ -19,7 +18,7 @@ public class Main {
         InetAddress parentIP = null;
 
         if(args.length == 3) {
-            chatWriter = new ChatWriter(nodeName, lossQuota, ownPort);
+            node = new TreeNode(nodeName, lossQuota, ownPort);
         }
         else if (args.length == 5)
         {
@@ -32,10 +31,10 @@ public class Main {
                 System.exit(2);
             }
             int parentPort = Integer.parseInt(args[4]);
-            chatWriter = new ChatWriter(nodeName, lossQuota, ownPort, parentIP, parentPort);
+            node = new TreeNode(nodeName, lossQuota, ownPort, parentIP, parentPort);
         }
-        //new Thread(new ChatReader(node)).start();
-        //new ChatWriter(node).run();
+        new Thread(new ChatReader(node)).start();
+        new ChatWriter(node).run();
 
 
 
