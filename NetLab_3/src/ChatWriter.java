@@ -44,7 +44,12 @@ public class ChatWriter// implements Runnable
                     //try //catch inside of while?
                     node.getSocket().send(packet); //TODO: Acknowledgement!!!!!
                 }
-               //send to children
+
+               for(InetSocketAddress childAddress: node.getChildrenAddresses())
+               {
+                   packet = new DatagramPacket(data, data.length, childAddress);
+                   node.getSocket().send(packet); //TODO: Acknowledgement!
+               }
 
             }
 

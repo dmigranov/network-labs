@@ -88,10 +88,12 @@ public class TreeNode
     {
         children.add(childAddress);
         //System.out.println("added a child!");
-
     }
 
-
+    public List<InetSocketAddress> getChildrenAddresses()
+    {
+        return children;
+    }
 
     public int getOwnPort()
     {
@@ -113,4 +115,3 @@ public class TreeNode
         return socket;
     }
 }
-
