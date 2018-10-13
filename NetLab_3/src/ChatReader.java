@@ -1,18 +1,17 @@
 import java.net.DatagramSocket;
-import java.io.BufferedReader;
 
-public class ChatWriter// implements Runnable
+public class ChatReader implements Runnable
 {
 
     private DatagramSocket socket = null;
 
-
-
+    @Override
     public void run() {
 
     }
 
-    public ChatWriter(TreeNode node)
+
+    public ChatReader(TreeNode node)
     {
 
     }

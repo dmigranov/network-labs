@@ -10,7 +10,7 @@ public class Main {
             System.err.println("Not enough arguments");
             System.exit(1);
         }
-        TreeNode node;
+        TreeNode node = null;
 
         String nodeName = args[0];
         double lossQuota = Double.parseDouble(args[1]); //0 <= lQ <= 1 ?
@@ -32,5 +32,10 @@ public class Main {
             int parentPort = Integer.parseInt(args[4]);
             node = new TreeNode(nodeName, lossQuota, ownPort, parentIP, parentPort);
         }
+        new Thread(new ChatReader(node)).start();
+        new ChatWriter(node).run();
+
+
+
     }
 }
