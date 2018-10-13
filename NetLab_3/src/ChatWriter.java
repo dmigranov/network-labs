@@ -1,7 +1,9 @@
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.io.BufferedReader;
+import java.net.InetSocketAddress;
 
 public class ChatWriter// implements Runnable
 {
@@ -18,21 +20,22 @@ public class ChatWriter// implements Runnable
 
 
     public void run() {
-        DatagramPacket packet = new DatagramPacket(new byte[1], 1); //change size!!!
-        while(true)
+        //DatagramPacket packet = new DatagramPacket(new byte[1], 1); //change size!!!
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
         {
-            try(DatagramSocket socket = new DatagramSocket(node.getOwnPort()))
+            String str;
+            while((str = br.readLine()) != null)
             {
-                socket.receive(packet);
-                System.out.println("New child connected: " + packet.getAddress() + ":" + packet.getPort());
-
-
+                System.out.println(str);
             }
-            catch (IOException e)
-            {
-                continue;
-            }
+
         }
+        catch(IOException e)
+        {
+            System.err.println("Can't create a System.in reader!");
+            System.exit(5);
+        }
+
     }
 
 

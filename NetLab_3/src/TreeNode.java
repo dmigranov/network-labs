@@ -1,10 +1,8 @@
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TreeNode
 {
@@ -15,9 +13,11 @@ public class TreeNode
     private String nodeName;
     private double lossQuota;
     private int ownPort;
-    private InetAddress parentIP = null;
+    //private InetAddress parentIP = null;
+    private InetSocketAddress parentAddress = null;
     private int parentPort = 0;
-    private List<TreeNode> children = new ArrayList<TreeNode>();
+    //private List<InetSocketAddress> children = new ArrayList<>();
+    private List<InetSocketAddress> children = new CopyOnWriteArrayList<>(); //is it needed???
     private boolean isRoot = true;
 
 
@@ -44,7 +44,7 @@ public class TreeNode
         this.nodeName = nodeName;
         this.lossQuota = lossQuota;
         this.ownPort = ownPort;
-        this.parentIP = parentIP;
+        this.parentAddress = new InetSocketAddress(parentIP, parentPort);
         this.parentPort = parentPort;
         isRoot = false;
 
@@ -65,12 +65,12 @@ public class TreeNode
     }
     private void notifyParent()
     {
-        //acknowledgement needed!
+        //TODO: acknowledgement needed!!!!!
 
 
         byte[] msg = new byte[1];
         msg[0] = 100;
-        DatagramPacket packet = new DatagramPacket(msg, msg.length, parentIP, parentPort);
+        DatagramPacket packet = new DatagramPacket(msg, msg.length, parentAddress);
         try {
             socket.send(packet);
 
@@ -86,9 +86,10 @@ public class TreeNode
         }
     }
 
-    public void addChild()
+    public void addChild(InetSocketAddress childAddress)
     {
-
+        children.add(childAddress);
+        //System.out.println("added a child!");
 
     }
 
