@@ -27,7 +27,6 @@ public class TreeNode
         this.lossQuota = lossQuota;
         this.ownPort = ownPort;
 
-
         try
         {
             socket = new DatagramSocket(ownPort);
@@ -37,28 +36,14 @@ public class TreeNode
             System.err.println(e.getMessage());
             System.exit(3);
         }
-
-
     }
 
     public TreeNode(String nodeName, double lossQuota, int ownPort, InetAddress parentIP, int parentPort)
     {
-        this.nodeName = nodeName;
-        this.lossQuota = lossQuota;
-        this.ownPort = ownPort;
-        this.parentAddress = new InetSocketAddress(parentIP, parentPort);
-        //this.parentPort = parentPort;
+        this(nodeName, lossQuota, ownPort);
         isRoot = false;
+        parentAddress = new InetSocketAddress(parentIP, parentPort);
 
-        try
-        {
-            socket = new DatagramSocket(ownPort);
-        }
-        catch(SocketException e)
-        {
-            System.err.println(e.getMessage());
-            System.exit(3);
-        }
 
         notifyParent();
 
@@ -68,7 +53,7 @@ public class TreeNode
     private void notifyParent()
     {
         //TODO: acknowledgement needed!!!!!
-
+        //TODO: what if a child is created before parent???
 
         byte[] msg = new byte[1];
         msg[0] = 100;
@@ -87,7 +72,6 @@ public class TreeNode
     public void addChild(InetSocketAddress childAddress)
     {
         children.add(childAddress);
-        //System.out.println("added a child!");
     }
 
     public List<InetSocketAddress> getChildrenAddresses()

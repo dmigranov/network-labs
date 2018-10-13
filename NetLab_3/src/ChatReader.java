@@ -38,7 +38,7 @@ public class ChatReader implements Runnable
                 {
                     String str = (new String(data, "UTF-8")).substring(1);
                     System.out.println("From " + packet.getAddress() + ":" + packet.getPort() + ": " + str);
-                    //TODO: send to children!
+                    //TODO: send to children and/or parent! (лавинообразно)
 
                 }
             }
