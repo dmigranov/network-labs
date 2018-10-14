@@ -63,15 +63,15 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         DatagramPacket packet = new DatagramPacket(msg, msg.length, parentAddress);
 
         try {
-            socket.setSoTimeout(5000); //!!! think about it
+            socket.setSoTimeout(5000);
 
             socket.send(packet);
             DatagramPacket answer = new DatagramPacket(new byte[1], 1);
             socket.receive(answer);
-            if (answer.getData()[0] != childAck)
+            if (answer.getData()[0] != childAck) //is this system good???
             {
                 System.out.println("Can't connect to a parent! The node is considered a root now");
-                isRoot = true; //TODO: is this good?
+                isRoot = true;
             }
 
         }

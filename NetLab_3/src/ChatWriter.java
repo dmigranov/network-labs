@@ -4,6 +4,7 @@ import java.net.DatagramPacket;
 import java.io.BufferedReader;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.UUID;
 
 public class ChatWriter// implements Runnable
 {
@@ -24,6 +25,10 @@ public class ChatWriter// implements Runnable
             {
                 String resStr = node.getNodeName() + ": " + str;
                 byte[] strBytes = resStr.getBytes("UTF-8");
+                UUID uuid = UUID.nameUUIDFromBytes(strBytes); //16 bytes. I guess there is no need to send it - it can easily be recalculated!
+                //добавить в очередь!
+
+
                 data = new byte[strBytes.length + 1];
                 data[0] = TreeNode.msgByte;
 

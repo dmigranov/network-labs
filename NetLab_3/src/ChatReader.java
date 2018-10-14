@@ -28,14 +28,12 @@ public class ChatReader implements Runnable
                     DatagramPacket answer = new DatagramPacket(msg, msg.length, packet.getSocketAddress());
                     node.getSocket().send(answer);
 
-
                     System.out.println("New child connected: " + packet.getAddress() + ":" + packet.getPort());
                     node.addChild(new InetSocketAddress(packet.getAddress(), packet.getPort()));
                 }
                 else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
                     String str = (new String(data, "UTF-8")).substring(1);
-                    //System.out.println("From " + packet.getAddress() + ":" + packet.getPort() + ": " + str);
                     System.out.println(str);
 
                     if(!node.isRoot() && !packet.getSocketAddress().equals(node.getParentAddress()))
@@ -48,7 +46,7 @@ public class ChatReader implements Runnable
                     {
                         if(!packet.getSocketAddress().equals(childAddress)) {
                             DatagramPacket sendPacket = new DatagramPacket(data, data.length, childAddress);
-                            node.getSocket().send(sendPacket); //TODO: Acknowledgement! Возможно, отправку с подтверждением стоило бы вынести в отдельный метод в классе TreeNode
+                            node.getSocket().send(sendPacket); //TODO: Acknowledgement! Возможно, чтобы обеспечить отсутствие задержек, стоит создать очередь сообщений и отправлять по очереди. Очередь ограниченная, выкидывать по какой-то системе
                         }
                     }
                 }
