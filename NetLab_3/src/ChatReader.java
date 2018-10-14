@@ -23,7 +23,10 @@ public class ChatReader implements Runnable
                 byte[] data = packet.getData();
                 if (data[0] == TreeNode.childByte)
                 {
-
+                    byte[] msg = new byte[1];
+                    msg[0] = TreeNode.childAck;
+                    DatagramPacket answer = new DatagramPacket(msg, msg.length, packet.getSocketAddress());
+                    node.getSocket().send(answer);
 
 
                     System.out.println("New child connected: " + packet.getAddress() + ":" + packet.getPort());

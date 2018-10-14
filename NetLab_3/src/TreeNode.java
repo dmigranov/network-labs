@@ -56,14 +56,23 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     }
     private void notifyParent()
     {
-        //TODO: acknowledgement needed!!!!!
-        //TODO: what if a child is created before parent???
+
 
         byte[] msg = new byte[1];
         msg[0] = childByte;
         DatagramPacket packet = new DatagramPacket(msg, msg.length, parentAddress);
+
         try {
+            socket.setSoTimeout(5000); //!!! think about it
+
             socket.send(packet);
+            DatagramPacket answer = new DatagramPacket(new byte[1], 1);
+            socket.receive(answer);
+            if (answer.getData()[0] != childAck)
+            {
+                System.out.println("Can't connect to a parent! The node is considered a root now");
+                isRoot = true; //TODO: is this good?
+            }
 
         }
         catch(IOException e)
