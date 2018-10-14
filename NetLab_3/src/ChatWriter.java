@@ -8,17 +8,12 @@ import java.net.SocketException;
 
 public class ChatWriter// implements Runnable
 {
-
     private TreeNode node = null;
-
 
     public ChatWriter(TreeNode node)
     {
         this.node = node;
     }
-
-
-
 
     public void run() {
         DatagramPacket packet; //TODO: change size? size = 508? 512? 500? fragmentation...
@@ -29,7 +24,8 @@ public class ChatWriter// implements Runnable
             while((str = br.readLine()) != null)
             {
                 //System.out.println(str);
-                byte[] strBytes = str.getBytes("UTF-8");
+                String resStr = node.getNodeName() + ": " + str;
+                byte[] strBytes = resStr.getBytes("UTF-8");
                 data = new byte[strBytes.length + 1];
                 data[0] = 10;
 
@@ -40,7 +36,6 @@ public class ChatWriter// implements Runnable
                 {
                     //System.out.println("I'm here");
                     packet = new DatagramPacket(data, data.length, node.getParentAddress());
-
                     //try //catch inside of while?
                     node.getSocket().send(packet); //TODO: Acknowledgement!!!!!
                 }
@@ -50,9 +45,7 @@ public class ChatWriter// implements Runnable
                    packet = new DatagramPacket(data, data.length, childAddress);
                    node.getSocket().send(packet); //TODO: Acknowledgement!
                }
-
             }
-
         }
         catch(SocketException e)
         {
@@ -67,8 +60,5 @@ public class ChatWriter// implements Runnable
             e.printStackTrace();
             System.exit(5);
         }
-
     }
-
-
 }

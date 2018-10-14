@@ -2,7 +2,9 @@ import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class TreeNode
 {
@@ -17,7 +19,9 @@ public class TreeNode
     private InetSocketAddress parentAddress = null;
     //private int parentPort = 0;
     //private List<InetSocketAddress> children = new ArrayList<>();
-    private List<InetSocketAddress> children = new CopyOnWriteArrayList<>(); //is it needed???
+    private Set<InetSocketAddress> children = new CopyOnWriteArraySet<>();
+    //к вопросу о лишних записях в сете (мёртвых душах): просто удалять при проверке того, дошло ли сообщение, их из сета
+    //впрочем, тогда уже можно будет заменить сет на лист обратно
     private boolean isRoot = true;
 
 
@@ -74,7 +78,7 @@ public class TreeNode
         children.add(childAddress);
     }
 
-    public List<InetSocketAddress> getChildrenAddresses()
+    public Set<InetSocketAddress> getChildrenAddresses()
     {
         return children;
     }
@@ -97,5 +101,9 @@ public class TreeNode
     public DatagramSocket getSocket()
     {
         return socket;
+    }
+
+    public String getNodeName() {
+        return nodeName;
     }
 }
