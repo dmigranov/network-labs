@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 
@@ -22,12 +21,15 @@ public class ChatReader implements Runnable
                 DatagramPacket packet = new DatagramPacket(new byte[512], 512);
                 node.getSocket().receive(packet);
                 byte[] data = packet.getData();
-                if (data[0] == 100)
+                if (data[0] == TreeNode.childByte)
                 {
+
+
+
                     System.out.println("New child connected: " + packet.getAddress() + ":" + packet.getPort());
                     node.addChild(new InetSocketAddress(packet.getAddress(), packet.getPort()));
                 }
-                else if (data[0] == 10) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
+                else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
                     String str = (new String(data, "UTF-8")).substring(1);
                     //System.out.println("From " + packet.getAddress() + ":" + packet.getPort() + ": " + str);

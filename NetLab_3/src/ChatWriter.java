@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.io.BufferedReader;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
@@ -23,13 +22,10 @@ public class ChatWriter// implements Runnable
             String str;
             while((str = br.readLine()) != null)
             {
-                //System.out.println(str);
                 String resStr = node.getNodeName() + ": " + str;
                 byte[] strBytes = resStr.getBytes("UTF-8");
                 data = new byte[strBytes.length + 1];
-                data[0] = 10;
-
-                //TODO: node name, don't forget about it!!!
+                data[0] = TreeNode.msgByte;
 
                 System.arraycopy(strBytes, 0, data, 1, strBytes.length);
                 if(!node.isRoot())
@@ -49,14 +45,11 @@ public class ChatWriter// implements Runnable
         }
         catch(SocketException e)
         {
-
-            //System.err.println(e.getMessage());
             e.printStackTrace();
             System.exit(3);
         }
         catch(IOException e)
         {
-            //System.err.println(e.getMessage());
             e.printStackTrace();
             System.exit(5);
         }

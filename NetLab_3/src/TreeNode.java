@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -8,9 +7,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class TreeNode
 {
-    //private TreeNode parent = null;
-
-    private DatagramSocket socket = null; //shall be closed in CR or CW
+private DatagramSocket socket = null; //shall be closed in CR or CW
 
     private String nodeName;
     private double lossQuota;
@@ -23,6 +20,9 @@ public class TreeNode
     //к вопросу о лишних записях в сете (мёртвых душах): просто удалять при проверке того, дошло ли сообщение, их из сета
     //впрочем, тогда уже можно будет заменить сет на лист обратно
     private boolean isRoot = true;
+    public final static byte childByte = 100;
+    public final static byte msgByte = 10;
+    public final static byte childAck = 101;
 
 
     public TreeNode(String nodeName, double lossQuota, int ownPort)
@@ -60,7 +60,7 @@ public class TreeNode
         //TODO: what if a child is created before parent???
 
         byte[] msg = new byte[1];
-        msg[0] = 100;
+        msg[0] = childByte;
         DatagramPacket packet = new DatagramPacket(msg, msg.length, parentAddress);
         try {
             socket.send(packet);
