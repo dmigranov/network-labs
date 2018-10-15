@@ -19,6 +19,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     private Set<InetSocketAddress> children = new CopyOnWriteArraySet<>();
     //к вопросу о лишних записях в сете (мёртвых душах): просто удалять при проверке того, дошло ли сообщение, их из сета
     //впрочем, тогда уже можно будет заменить сет на лист обратно
+    //TODO: добавить очередь (список?) сообщений. Сообщение: ID, текст (? а зачем тогда ID?), количество попыток отправки (?)...
     private boolean isRoot = true;
     public final static byte childByte = 100;
     public final static byte msgByte = 10;
