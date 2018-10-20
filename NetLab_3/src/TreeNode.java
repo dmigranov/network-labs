@@ -12,7 +12,7 @@ public class TreeNode
 private DatagramSocket socket = null; //shall be closed in CR or CW
 
     private String nodeName;
-    private double lossQuota;
+    private int lossQuota;
     private int ownPort;
     private InetSocketAddress parentAddress = null;
     //private int parentPort = 0;
@@ -31,7 +31,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     public final static byte childAck = 101;
     public final static byte msgAck = 11;
 
-    public TreeNode(String nodeName, double lossQuota, int ownPort)
+    public TreeNode(String nodeName, int lossQuota, int ownPort)
     {
         this.nodeName = nodeName;
         this.lossQuota = lossQuota;
@@ -48,7 +48,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         }
     }
 
-    public TreeNode(String nodeName, double lossQuota, int ownPort, InetAddress parentIP, int parentPort)
+    public TreeNode(String nodeName, int lossQuota, int ownPort, InetAddress parentIP, int parentPort)
     {
         this(nodeName, lossQuota, ownPort);
         isRoot = false;

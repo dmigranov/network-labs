@@ -13,7 +13,7 @@ public class Main {
         TreeNode node = null;
 
         String nodeName = args[0];
-        double lossQuota = Double.parseDouble(args[1]); //0 <= lQ <= 1 ?
+        int lossQuota = Integer.parseInt(args[1]); //0 <= lQ <= 1 ?
         int ownPort = Integer.parseInt(args[2]);
         InetAddress parentIP = null;
 

@@ -14,9 +14,11 @@ public class Message {
 
     public Message(byte[] data) {
         this.data = data;
+        byte[] UUIDData = new byte[data.length - 1];
+        System.arraycopy(data, 1, UUIDData,0, data.length - 1);
         isOriginal = true;
-        UUID uuid = UUID.nameUUIDFromBytes(data);
-        //System.out.println(uuid);
+        UUID uuid = UUID.nameUUIDFromBytes(UUIDData);
+        System.out.println("Constr: " + uuid);
         ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());

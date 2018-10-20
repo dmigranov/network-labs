@@ -18,6 +18,7 @@ public class ChatWriter// implements Runnable
     public void run() {
         DatagramPacket packet; //TODO: change size? size = 508? 512? 500? fragmentation...
 
+
         try
         {
             while(true)
@@ -28,7 +29,7 @@ public class ChatWriter// implements Runnable
                     continue;
 
                 msg.incrementCount();
-                node.getMessageQueue().add(msg);
+                node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
 
                 byte[] data = msg.getData();
                 if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
@@ -46,15 +47,15 @@ public class ChatWriter// implements Runnable
                         node.getSocket().send(packet); //TODO: Acknowledgement!
                     }
                 }
-                if(!msg.isOriginal())
+                /*if(!msg.isOriginal())
                 {
                     data = new byte[17];
 
                     data[0] = TreeNode.msgAck;
-                    System.arraycopy(msg.getUUIDBytes(), 0, data, 1, 16/*msg.getUUIDBytes().length*/);
+                    System.arraycopy(msg.getUUIDBytes(), 0, data, 1, 16msg.getUUIDBytes().length);
                     packet = new DatagramPacket(data, data.length, msg.getSource());
                     node.getSocket().send(packet); //this is ack!
-                }
+                }*/
             }
 
         }
