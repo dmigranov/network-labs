@@ -16,16 +16,16 @@ public class Message {
 
     public Message(byte[] data) {
         this.data = data;
-        byte[] uuidData = new byte[data.length - 1];
-        System.arraycopy(data, 1, uuidData,0, data.length - 1);
+        /*byte[] uuidData = new byte[data.length - 1];
+        System.arraycopy(data, 1, uuidData,0, data.length - 1);*/
         isOriginal = true;
-        UUID uuid = UUID.nameUUIDFromBytes(uuidData);
+        UUID uuid = UUID.nameUUIDFromBytes(data); //including the first byte
         /*try {
-            System.out.println("Constr: " + new String(uuidData, "UTF-8"));
+            System.out.println("Constr: " + new String(data, "UTF-8"));
         }
         catch(UnsupportedEncodingException e)
         {}*/
-        System.out.println("Constr: " + Arrays.toString(uuidData));
+        //System.out.println("Constr: " + Arrays.toString(data));
         ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());

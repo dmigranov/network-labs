@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
@@ -22,8 +23,10 @@ public class ChatReader implements Runnable
         {
             try
             {
-                if(random.nextInt(100) < node.getLossQuota())
+                if(random.nextInt(100) < node.getLossQuota()) {
+                    System.out.println("Lost a packet");
                     continue;
+                }
                 //block for a time period only???!
                 DatagramPacket packet = new DatagramPacket(new byte[512], 512);
                 node.getSocket().receive(packet);
@@ -44,8 +47,8 @@ public class ChatReader implements Runnable
                     System.out.println(str);
                     node.getMessageQueue().add(new Message(data, packet.getSocketAddress())); //там рассылка другим
 
+                    UUID uuid = UUID.nameUUIDFromBytes(data);
                     data = new byte[17];
-                    UUID uuid = UUID.nameUUIDFromBytes(str.getBytes("UTF-8"));
                     byte[] uuidBytes = new byte[16];
                     //System.out.println("Sent: " + uuid);
                     ByteBuffer bb = ByteBuffer.wrap(uuidBytes);

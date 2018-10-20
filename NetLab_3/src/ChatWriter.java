@@ -24,12 +24,13 @@ public class ChatWriter// implements Runnable
             while(true)
             {
 
-                Message msg = node.getMessageQueue().poll(); //right now I'm assuming everything is okay! so I don't push it back
+                Message msg = node.getMessageQueue().poll();
                 if (msg == null)
                     continue;
 
                 msg.incrementCount();
-                node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
+                //if incCount > ...
+                //node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
 
                 byte[] data = msg.getData();
                 if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
