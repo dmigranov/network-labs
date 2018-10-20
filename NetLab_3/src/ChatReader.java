@@ -37,7 +37,6 @@ public class ChatReader implements Runnable
                     System.out.println(str);
                     node.getMessageQueue().add(new Message(data, packet.getSocketAddress()));
 
-
                     /*if(!node.isRoot() && !packet.getSocketAddress().equals(node.getParentAddress()))
                     {
                         DatagramPacket sendPacket = new DatagramPacket(data, data.length, node.getParentAddress());

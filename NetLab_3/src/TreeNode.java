@@ -23,12 +23,13 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     //TODO: добавить очередь (список?) сообщений. Сообщение: ID, текст (? а зачем тогда ID?), количество попыток отправки (?)...
     private boolean isRoot = true;
     private Queue<Message> messageQueue = new ConcurrentLinkedQueue<>();
+    //maybe i'll need another queue/set to avoid resending
     //private List<Message> messageList = new CopyOnWriteArrayList<>();
 
     public final static byte childByte = 100;
     public final static byte msgByte = 10;
     public final static byte childAck = 101;
-
+    public final static byte msgAck = 11;
 
     public TreeNode(String nodeName, double lossQuota, int ownPort)
     {

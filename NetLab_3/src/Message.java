@@ -34,4 +34,12 @@ public class Message {
     public boolean isOriginal() {
         return isOriginal;
     }
+    public void incrementCount()
+    {
+        tryCount++;
+    }
+
+    public UUID getUUID() {
+        return uuid;
+    }
 }

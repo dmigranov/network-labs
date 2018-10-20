@@ -27,6 +27,8 @@ public class ChatWriter// implements Runnable
                 if (msg == null)
                     continue;
 
+                msg.incrementCount();
+                //node.getMessageQueue().add(msg);
 
                 byte[] data = msg.getData();
                 if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
@@ -44,6 +46,14 @@ public class ChatWriter// implements Runnable
                         node.getSocket().send(packet); //TODO: Acknowledgement!
                     }
                 }
+                /*if(!msg.isOriginal())
+                {
+                    data = new byte[9];
+                    data[0] = TreeNode.msgAck;
+                    System.arraycopy(msg.getUUID(), 0, data, 1, strBytes.length);
+                    packet = new DatagramPacket(data, data.length,, msg.getSource());
+                    node.getSocket().send(packet); //this is ack?
+                }*/
             }
 
         }

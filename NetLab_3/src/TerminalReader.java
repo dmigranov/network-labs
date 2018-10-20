@@ -23,7 +23,7 @@ public class TerminalReader implements Runnable {
                 byte [] data;
                 String resStr = node.getNodeName() + ": " + str;
                 byte[] strBytes = resStr.getBytes("UTF-8");
-                UUID uuid = UUID.nameUUIDFromBytes(strBytes); //16 bytes. I guess there is no need to send it - it can easily be recalculated!
+                //UUID uuid = UUID.nameUUIDFromBytes(strBytes); //16 bytes. I guess there is no need to send it - it can easily be recalculated!
 
                 data = new byte[strBytes.length + 1];
                 data[0] = TreeNode.msgByte;
