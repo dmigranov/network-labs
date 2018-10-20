@@ -20,6 +20,8 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     //к вопросу о лишних записях в сете (мёртвых душах): просто удалять при проверке того, дошло ли сообщение, их из сета
     //впрочем, тогда уже можно будет заменить сет на лист обратно
     private boolean isRoot = true;
+    //private ConcurrentLinkedQueue
+    private List<Message> messageList = new CopyOnWriteArrayList<>();
     public final static byte childByte = 100;
     public final static byte msgByte = 10;
     public final static byte childAck = 101;
