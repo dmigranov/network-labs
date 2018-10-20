@@ -34,7 +34,8 @@ public class Main {
             node = new TreeNode(nodeName, lossQuota, ownPort, parentIP, parentPort);
         }
         new Thread(new ChatReader(node)).start();
-        new ChatWriter(node).run();
+        new Thread(new TerminalReader(node)).start();
+        new ChatWriter(node).run(); //is that order okay?
 
 
 

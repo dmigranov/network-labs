@@ -1,7 +1,9 @@
 import java.io.IOException;
 import java.net.*;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -12,7 +14,6 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     private String nodeName;
     private double lossQuota;
     private int ownPort;
-    //private InetAddress parentIP = null;
     private InetSocketAddress parentAddress = null;
     //private int parentPort = 0;
     //private List<InetSocketAddress> children = new ArrayList<>();
@@ -21,8 +22,9 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     //впрочем, тогда уже можно будет заменить сет на лист обратно
     //TODO: добавить очередь (список?) сообщений. Сообщение: ID, текст (? а зачем тогда ID?), количество попыток отправки (?)...
     private boolean isRoot = true;
-    //private ConcurrentLinkedQueue
-    private List<Message> messageList = new CopyOnWriteArrayList<>();
+    private Queue<Message> messageQueue = new ConcurrentLinkedQueue<>();
+    //private List<Message> messageList = new CopyOnWriteArrayList<>();
+
     public final static byte childByte = 100;
     public final static byte msgByte = 10;
     public final static byte childAck = 101;
@@ -51,9 +53,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         isRoot = false;
         parentAddress = new InetSocketAddress(parentIP, parentPort);
 
-
         notifyParent();
-
 
         //parent = null;
     }
@@ -117,5 +117,13 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
 
     public String getNodeName() {
         return nodeName;
+    }
+
+    public Queue<Message> getMessageQueue() {
+        return messageQueue;
+    }
+
+    public double getLossQuota() {
+        return lossQuota;
     }
 }
