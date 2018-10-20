@@ -35,8 +35,10 @@ public class ChatReader implements Runnable
                 {
                     String str = (new String(data, "UTF-8")).substring(1);
                     System.out.println(str);
+                    node.getMessageQueue().add(new Message(data, packet.getSocketAddress()));
 
-                    if(!node.isRoot() && !packet.getSocketAddress().equals(node.getParentAddress()))
+
+                    /*if(!node.isRoot() && !packet.getSocketAddress().equals(node.getParentAddress()))
                     {
                         DatagramPacket sendPacket = new DatagramPacket(data, data.length, node.getParentAddress());
                         node.getSocket().send(sendPacket); //TODO: Acknowledgement!!!!!
@@ -48,7 +50,7 @@ public class ChatReader implements Runnable
                             DatagramPacket sendPacket = new DatagramPacket(data, data.length, childAddress);
                             node.getSocket().send(sendPacket); //TODO: Acknowledgement! Возможно, чтобы обеспечить отсутствие задержек, стоит создать очередь сообщений и отправлять по очереди. Очередь ограниченная, выкидывать по какой-то системе
                         }
-                    }
+                    }*/
                 }
             }
             catch(IOException e)

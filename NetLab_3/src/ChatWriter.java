@@ -20,31 +20,33 @@ public class ChatWriter// implements Runnable
 
         try
         {
-            while(true) {
+            while(true)
+            {
 
                 Message msg = node.getMessageQueue().poll(); //right now I'm assuming everything is okay! so I don't push it back
                 if (msg == null)
                     continue;
 
+
                 byte[] data = msg.getData();
-                if (!node.isRoot()) {
+                if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
+                {
+
                     //System.out.println("I'm here");
                     packet = new DatagramPacket(data, data.length, node.getParentAddress());
                     node.getSocket().send(packet); //TODO: Acknowledgement!!!!!
                 }
 
-                for (InetSocketAddress childAddress : node.getChildrenAddresses()) {
-                    packet = new DatagramPacket(data, data.length, childAddress);
-                    node.getSocket().send(packet); //TODO: Acknowledgement!
+                for (InetSocketAddress childAddress : node.getChildrenAddresses())
+                {
+                    if(msg.isOriginal() || !msg.getSource().equals(childAddress)) {
+                        packet = new DatagramPacket(data, data.length, childAddress);
+                        node.getSocket().send(packet); //TODO: Acknowledgement!
+                    }
                 }
             }
 
         }
-        /*catch(SocketException e)
-        {
-            e.printStackTrace();
-            System.exit(3);
-        }*/
         catch(IOException e)
         {
             e.printStackTrace();
