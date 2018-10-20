@@ -2,6 +2,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.util.UUID;
 
 public class ChatReader implements Runnable
 {
@@ -18,6 +20,7 @@ public class ChatReader implements Runnable
         {
             try
             {
+                //block for a time period only???!
                 DatagramPacket packet = new DatagramPacket(new byte[512], 512);
                 node.getSocket().receive(packet);
                 byte[] data = packet.getData();
@@ -35,21 +38,25 @@ public class ChatReader implements Runnable
                 {
                     String str = (new String(data, "UTF-8")).substring(1);
                     System.out.println(str);
-                    node.getMessageQueue().add(new Message(data, packet.getSocketAddress()));
-
-                    /*if(!node.isRoot() && !packet.getSocketAddress().equals(node.getParentAddress()))
+                    node.getMessageQueue().add(new Message(data, packet.getSocketAddress())); //там и рассылка другим, и отправка подтверждения
+                }
+                else if (data[0] == TreeNode.msgAck)
+                {
+                    byte[] uuidBytes = new byte[16];
+                    System.arraycopy(data, 1, uuidBytes, 0, 16/*msg.getUUIDBytes().length*/);
+                    /*ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
+                    long mostSigBits = bb.getLong();
+                    long leastSigBits = bb.getLong();
+                    UUID uuid = new UUID(mostSigBits, leastSigBits);
+                    System.out.println(uuid);*/
+                    for (Message msg: node.getMessageQueue())
                     {
-                        DatagramPacket sendPacket = new DatagramPacket(data, data.length, node.getParentAddress());
-                        node.getSocket().send(sendPacket); //TODO: Acknowledgement!!!!!
-                    }
+                        if (msg.getUUIDBytes().equals((uuidBytes))) {
 
-                    for(InetSocketAddress childAddress: node.getChildrenAddresses())
-                    {
-                        if(!packet.getSocketAddress().equals(childAddress)) {
-                            DatagramPacket sendPacket = new DatagramPacket(data, data.length, childAddress);
-                            node.getSocket().send(sendPacket); //TODO: Acknowledgement! Возможно, чтобы обеспечить отсутствие задержек, стоит создать очередь сообщений и отправлять по очереди. Очередь ограниченная, выкидывать по какой-то системе
+                            node.getMessageQueue().remove(msg);
                         }
-                    }*/
+                    }
+                    node.getMessageQueue().add(new Message(data, packet.getSocketAddress()));
                 }
             }
             catch(IOException e)
