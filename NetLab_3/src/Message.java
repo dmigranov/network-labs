@@ -1,5 +1,7 @@
+import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.UUID;
 
 public class Message {
@@ -14,11 +16,16 @@ public class Message {
 
     public Message(byte[] data) {
         this.data = data;
-        byte[] UUIDData = new byte[data.length - 1];
-        System.arraycopy(data, 1, UUIDData,0, data.length - 1);
+        byte[] uuidData = new byte[data.length - 1];
+        System.arraycopy(data, 1, uuidData,0, data.length - 1);
         isOriginal = true;
-        UUID uuid = UUID.nameUUIDFromBytes(UUIDData);
-        System.out.println("Constr: " + uuid);
+        UUID uuid = UUID.nameUUIDFromBytes(uuidData);
+        /*try {
+            System.out.println("Constr: " + new String(uuidData, "UTF-8"));
+        }
+        catch(UnsupportedEncodingException e)
+        {}*/
+        System.out.println("Constr: " + Arrays.toString(uuidData));
         ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());

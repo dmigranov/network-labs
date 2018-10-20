@@ -47,7 +47,7 @@ public class ChatReader implements Runnable
                     data = new byte[17];
                     UUID uuid = UUID.nameUUIDFromBytes(str.getBytes("UTF-8"));
                     byte[] uuidBytes = new byte[16];
-                    System.out.println("Sent: " + uuid);
+                    //System.out.println("Sent: " + uuid);
                     ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
                     bb.putLong(uuid.getMostSignificantBits());
                     bb.putLong(uuid.getLeastSignificantBits());
@@ -65,7 +65,7 @@ public class ChatReader implements Runnable
                     long mostSigBits = bb.getLong();
                     long leastSigBits = bb.getLong();
                     UUID uuid = new UUID(mostSigBits, leastSigBits);
-                    System.out.println("Recvd: " + uuid);
+                    //System.out.println("Recvd: " + uuid);
                     for (Message msg: node.getMessageQueue())
                     {
                         if (msg.getUUIDBytes().equals((uuidBytes))) {
@@ -83,3 +83,5 @@ public class ChatReader implements Runnable
         }
     }
 }
+
+//the problem is the first byte: sometimes I encode it and sometimes I don't
