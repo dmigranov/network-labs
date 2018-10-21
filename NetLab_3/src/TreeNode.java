@@ -162,7 +162,9 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         //ack! msgAck(1b) + 16b UUID
         //I understood what the problem is! ack, as a message, should be acknowledged too! that's the trouble
         //so what I should do is to delete this code
-        byte[] uuidBytes = new byte[16];
+        //and send ack directly from reader or writer
+        //no, not from writer!!! because writer is for every message
+        /*byte[] uuidBytes = new byte[16];
         byte[] newData = new byte[17];
         newData[0] = msgAck;
         UUID uuid = UUID.nameUUIDFromBytes(data);
@@ -170,7 +172,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
         System.arraycopy(uuidBytes, 0, newData,1, 16);
-        messageQueue.add(new Message(newData, source));
+        messageQueue.add(new Message(newData, source));*/
         /*packet = new DatagramPacket(data, data.length, msg.getSource());
         node.getSocket().send(packet); //this is ack!*/
 

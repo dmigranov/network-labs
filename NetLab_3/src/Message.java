@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class Message {
-    //private  uuid;
+    private UUID uuid;
     private byte[] uuidBytes = new byte[16];
     private byte[] data ;
     private int tryCount = 0;
@@ -21,7 +21,7 @@ public class Message {
         /*byte[] uuidData = new byte[data.length - 1];
         System.arraycopy(data, 1, uuidData,0, data.length - 1);*/
         isOriginal = true;
-        UUID uuid = UUID.nameUUIDFromBytes(data); //including the first byte
+        uuid = UUID.nameUUIDFromBytes(data); //including the first byte
         /*try {
             System.out.println("Constr: " + new String(data, "UTF-8"));
         }
@@ -55,6 +55,11 @@ public class Message {
     public boolean isOriginal() {
         return isOriginal;
     }
+
+    public UUID getUUID() {
+        return uuid;
+    }
+
     int incrementCount()
     {
         tryCount++;

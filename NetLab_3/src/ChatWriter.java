@@ -23,17 +23,19 @@ public class ChatWriter// implements Runnable
         {
             while(true)
             {
+                Message msg;
+                synchronized(node) {
+                    msg  = node.getMessageQueue().poll();
+                    if (msg == null)
+                        continue;
 
-                Message msg = node.getMessageQueue().poll();
-                if (msg == null)
-                    continue;
+                    /*if (msg.incrementCount() > Message.maxTryCount) {
+                        //delete the node that doesn't answer
+                        continue;
+                    }*/
 
-                if (msg.incrementCount() > Message.maxTryCount)
-                {
-                    //delete the node that doesn't answer
-                    continue;
+                    node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
                 }
-                //node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
 
                 packet = new DatagramPacket(msg.getData(), msg.getData().length, msg.getDest());
                 node.getSocket().send(packet);

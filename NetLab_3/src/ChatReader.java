@@ -49,7 +49,7 @@ public class ChatReader implements Runnable
                     //node.getMessageQueue().add(new Message(data, packet.getSocketAddress())); //там рассылка другим
                     node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
 
-                    /*UUID uuid = UUID.nameUUIDFromBytes(data);
+                    UUID uuid = UUID.nameUUIDFromBytes(data);
                     data = new byte[17];
                     byte[] uuidBytes = new byte[16];
                     //System.out.println("Sent: " + uuid);
@@ -59,7 +59,7 @@ public class ChatReader implements Runnable
                     data[0] = TreeNode.msgAck;
                     System.arraycopy(uuidBytes, 0, data, 1, 16);
                     packet = new DatagramPacket(data, data.length, packet.getSocketAddress());
-                    node.getSocket().send(packet);*/
+                    node.getSocket().send(packet);
 
                 }
                 else if (data[0] == TreeNode.msgAck)
@@ -71,12 +71,12 @@ public class ChatReader implements Runnable
                     long mostSigBits = bb.getLong();
                     long leastSigBits = bb.getLong();
                     UUID uuid = new UUID(mostSigBits, leastSigBits);
-
-                    for (Message msg: node.getMessageQueue())
-                    {
-                        if (msg.getUUIDBytes().equals((uuidBytes))) {
-                            System.out.println("Deleted");
-                            node.getMessageQueue().remove(msg);
+                    synchronized (node) {
+                        for (Message msg : node.getMessageQueue()) {
+                            if (msg.getUUID().equals((uuid))) {
+                                System.out.println("Deleted");
+                                node.getMessageQueue().remove(msg);
+                            }
                         }
                     }
 
