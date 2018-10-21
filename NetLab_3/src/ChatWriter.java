@@ -1,10 +1,5 @@
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.DatagramPacket;
-
-import java.net.InetSocketAddress;
-import java.net.SocketException;
-import java.util.UUID;
 
 public class ChatWriter// implements Runnable
 {
@@ -24,21 +19,25 @@ public class ChatWriter// implements Runnable
             while(true)
             {
                 Message msg;
-                synchronized(node) {
-                    msg  = node.getMessageQueue().poll();
-                    if (msg == null)
-                        continue;
 
-                    if (msg.incrementCount() > Message.maxTryCount) {
-                        //delete the node that doesn't answer
-                        continue;
-                    }
 
-                    node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
+                msg  = node.getMessageQueue().poll();
+                if (msg == null)
+                    continue;
+
+                if (msg.incrementCount() > Message.maxTryCount)
+                {
+                    //delete the node that doesn't answer
+                    continue;
                 }
+
+
+
 
                 packet = new DatagramPacket(msg.getData(), msg.getData().length, msg.getDest());
                 node.getSocket().send(packet);
+
+                node.getSentMessages().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
                 /*if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
                 {
 

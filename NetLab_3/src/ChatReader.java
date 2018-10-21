@@ -1,8 +1,6 @@
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.UUID;
@@ -52,7 +50,7 @@ public class ChatReader implements Runnable
 
                     //UUID uuid = UUID.nameUUIDFromBytes(new String(data, "UTF-8").getBytes("UTF-8"));
                     UUID uuid = UUID.nameUUIDFromBytes(str.getBytes("UTF-8"));
-                    System.out.println("Child sent to father UUID: " + uuid);
+                    //System.out.println("Child sent to father UUID: " + uuid);
                     data = new byte[17];
                     byte[] uuidBytes = new byte[16];
                     //System.out.println("Sent: " + uuid);
@@ -67,20 +65,22 @@ public class ChatReader implements Runnable
                 }
                 else if (data[0] == TreeNode.msgAck)
                 {
-                    //System.out.println("i'm here");
+                    //
                     byte[] uuidBytes = new byte[16];
                     System.arraycopy(data, 1, uuidBytes, 0, 16/*msg.getUUIDBytes().length*/);
                     ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
                     long mostSigBits = bb.getLong();
                     long leastSigBits = bb.getLong();
                     UUID uuid = new UUID(mostSigBits, leastSigBits);
-                    synchronized (node) {
-                        for (Message msg : node.getMessageQueue()) {
-                            if (msg.getUUID().equals((uuid))) {
-                                System.out.println("Deleted");
-                                node.getMessageQueue().remove(msg);
-                            }
+                    //System.out.println("father got UUID back: " + uuid);
+
+                    //for (Message msg : node.getMessageQueue()) {
+                    for (Message msg : node.getSentMessages()) {
+                        if (msg.getUUID().equals((uuid))) {
+                            //System.out.println("Deleted");
+                            node.getSentMessages().remove(msg);
                         }
+
                     }
 
                     //node.addMessagesToAll(data, packet.getSocketAddress());
@@ -93,5 +93,3 @@ public class ChatReader implements Runnable
         }
     }
 }
-
-//the problem is the first byte: sometimes I encode it and sometimes I don't

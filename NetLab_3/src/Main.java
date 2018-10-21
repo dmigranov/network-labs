@@ -35,6 +35,7 @@ public class Main {
         }
         new Thread(new ChatReader(node)).start();
         new Thread(new TerminalReader(node)).start();
+        new Thread(new ChatResender(node)).start();
         new ChatWriter(node).run(); //is that order okay?
 
 

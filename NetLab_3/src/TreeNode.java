@@ -1,12 +1,8 @@
 import java.io.IOException;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class TreeNode
@@ -17,14 +13,13 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     private int lossQuota;
     private int ownPort;
     private InetSocketAddress parentAddress = null;
-    //private int parentPort = 0;
     //private List<InetSocketAddress> children = new ArrayList<>();
     private Set<InetSocketAddress> children = new CopyOnWriteArraySet<>();
     //к вопросу о лишних записях в сете (мёртвых душах): просто удалять при проверке того, дошло ли сообщение, их из сета
     //впрочем, тогда уже можно будет заменить сет на лист обратно
-    //TODO: добавить очередь (список?) сообщений. Сообщение: ID, текст (? а зачем тогда ID?), количество попыток отправки (?)...
     private boolean isRoot = true;
     private Queue<Message> messageQueue = new ConcurrentLinkedQueue<>();
+    private Queue<Message> sentMessages = new ConcurrentLinkedQueue<>();
     //maybe i'll need another queue/set to avoid resending
     //private List<Message> messageList = new CopyOnWriteArrayList<>();
 
@@ -36,8 +31,8 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     public TreeNode(String nodeName, int lossQuota, int ownPort)
     {
         this.nodeName = nodeName;
-        this.lossQuota = -1;
-        //this.lossQuota = lossQuota;
+        //this.lossQuota = -1; //=without losses
+        this.lossQuota = lossQuota;
         this.ownPort = ownPort;
 
         try
@@ -75,17 +70,15 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
             socket.send(packet);
             DatagramPacket answer = new DatagramPacket(new byte[1], 1);
             socket.receive(answer);
-            if (answer.getData()[0] != childAck) //is this system good???
+            /*if (answer.getData()[0] != childAck) //is this system good???
             {
                 //System.out.println("Can't connect to a parent! The node is considered a root now");
                 isRoot = true;
-            }
+            }*/
 
         }
         catch(IOException e)
         {
-            /*System.err.println(e.getMessage());
-            System.exit(4);*/
             System.out.println("Can't connect to a parent! The node is considered a root now");
             isRoot = true;
         }
@@ -177,5 +170,9 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         node.getSocket().send(packet); //this is ack!*/
 
 
+    }
+
+    public Queue<Message> getSentMessages() {
+        return sentMessages;
     }
 }
