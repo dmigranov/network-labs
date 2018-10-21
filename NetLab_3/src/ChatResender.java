@@ -19,6 +19,8 @@ public class ChatResender implements Runnable {
 
             node.getMessageQueue().addAll(node.getSentMessages());
             node.getSentMessages().clear();
+            
+            //каждые 500 миллисекундд (или больше) обновлять списки (тот, что сверху, плюс список прибывших сообщений). На это время заблокировать получение сообщений и добавление в список
         }
 
     }
