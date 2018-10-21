@@ -28,7 +28,7 @@ public class ChatReader implements Runnable
                 DatagramPacket packet = new DatagramPacket(new byte[512], 512);
                 node.getSocket().receive(packet);
                 if(random.nextInt(100) < node.getLossQuota()) {
-                    System.out.println("Lost a packet");
+                    //System.out.println("Lost a packet");
                     continue;
                 }
                 byte[] data = packet.getData();
@@ -46,9 +46,10 @@ public class ChatReader implements Runnable
                 {
                     String str = (new String(data, "UTF-8")).substring(1);
                     System.out.println(str);
-                    node.getMessageQueue().add(new Message(data, packet.getSocketAddress())); //там рассылка другим
+                    //node.getMessageQueue().add(new Message(data, packet.getSocketAddress())); //там рассылка другим
+                    node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
 
-                    UUID uuid = UUID.nameUUIDFromBytes(data);
+                    /*UUID uuid = UUID.nameUUIDFromBytes(data);
                     data = new byte[17];
                     byte[] uuidBytes = new byte[16];
                     //System.out.println("Sent: " + uuid);
@@ -58,11 +59,12 @@ public class ChatReader implements Runnable
                     data[0] = TreeNode.msgAck;
                     System.arraycopy(uuidBytes, 0, data, 1, 16);
                     packet = new DatagramPacket(data, data.length, packet.getSocketAddress());
-                    node.getSocket().send(packet);
+                    node.getSocket().send(packet);*/
 
                 }
                 else if (data[0] == TreeNode.msgAck)
                 {
+                    System.out.println("i'm here");
                     byte[] uuidBytes = new byte[16];
                     System.arraycopy(data, 1, uuidBytes, 0, 16/*msg.getUUIDBytes().length*/);
                     ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
@@ -73,12 +75,12 @@ public class ChatReader implements Runnable
                     for (Message msg: node.getMessageQueue())
                     {
                         if (msg.getUUIDBytes().equals((uuidBytes))) {
-
+                            System.out.println("Deleted");
                             node.getMessageQueue().remove(msg);
                         }
                     }
-                    //node.getMessageQueue().add(new Message(data, packet.getSocketAddress()));
-                    node.addMessagesToAll(data, packet.getSocketAddress());
+
+                    //node.addMessagesToAll(data, packet.getSocketAddress());
                 }
             }
             catch(IOException e)

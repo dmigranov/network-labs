@@ -36,7 +36,8 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     public TreeNode(String nodeName, int lossQuota, int ownPort)
     {
         this.nodeName = nodeName;
-        this.lossQuota = lossQuota;
+        this.lossQuota = -1;
+        //this.lossQuota = lossQuota;
         this.ownPort = ownPort;
 
         try
