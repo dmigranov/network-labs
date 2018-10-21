@@ -74,15 +74,17 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
             socket.receive(answer);
             if (answer.getData()[0] != childAck) //is this system good???
             {
-                System.out.println("Can't connect to a parent! The node is considered a root now");
+                //System.out.println("Can't connect to a parent! The node is considered a root now");
                 isRoot = true;
             }
 
         }
         catch(IOException e)
         {
-            System.err.println(e.getMessage());
-            System.exit(4);
+            /*System.err.println(e.getMessage());
+            System.exit(4);*/
+            System.out.println("Can't connect to a parent! The node is considered a root now");
+            isRoot = true;
         }
     }
 

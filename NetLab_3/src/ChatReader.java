@@ -23,13 +23,14 @@ public class ChatReader implements Runnable
         {
             try
             {
+
+                //block for a time period only???!
+                DatagramPacket packet = new DatagramPacket(new byte[512], 512);
+                node.getSocket().receive(packet);
                 if(random.nextInt(100) < node.getLossQuota()) {
                     System.out.println("Lost a packet");
                     continue;
                 }
-                //block for a time period only???!
-                DatagramPacket packet = new DatagramPacket(new byte[512], 512);
-                node.getSocket().receive(packet);
                 byte[] data = packet.getData();
                 if (data[0] == TreeNode.childByte)
                 {
