@@ -34,7 +34,8 @@ public class ChatWriter// implements Runnable
                 }
                 node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
 
-                byte[] data = msg.getData();
+                packet = new DatagramPacket(msg.getData(), msg.getData().length, msg.getDest());
+                node.getSocket().send(packet);
                 /*if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
                 {
 

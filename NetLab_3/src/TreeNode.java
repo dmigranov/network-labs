@@ -150,15 +150,15 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     public void addMessagesToAll(byte[] data, SocketAddress source) { //non-original message (re-sending)
         if (!this.isRoot() && !source.equals(parentAddress))
         {
-            messageQueue.add(new Message(data, parentAddress, source));
+            messageQueue.add(new Message(data, parentAddress/*, source*/));
         }
         for (InetSocketAddress childAddress : children)
         {
             if(!source.equals(childAddress)) {
-                messageQueue.add(new Message(data, childAddress, source));
+                messageQueue.add(new Message(data, childAddress/*, source*/));
             }
         }
-        //ack!
+        //ack! msgAck(1b) + 16b UUID
         byte[] uuidBytes = new byte[16];
         byte[] newData = new byte[17];
         newData[0] = msgAck;
@@ -167,7 +167,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
         System.arraycopy(uuidBytes, 0, newData,1, 16);
-        messageQueue.add(new Message(newData, childAddress, source));
+        messageQueue.add(new Message(newData, source));
         /*packet = new DatagramPacket(data, data.length, msg.getSource());
         node.getSocket().send(packet); //this is ack!*/
 
