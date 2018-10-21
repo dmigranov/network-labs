@@ -29,7 +29,8 @@ public class TerminalReader implements Runnable {
                 data[0] = TreeNode.msgByte;
                 System.arraycopy(strBytes, 0, data, 1, strBytes.length);
 
-                node.getMessageQueue().add(new Message(data));
+                //node.getMessageQueue().add(new Message(data));
+                node.addMessagesToAll(data);
             }
         }
         catch(IOException e)

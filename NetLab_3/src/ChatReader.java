@@ -77,7 +77,8 @@ public class ChatReader implements Runnable
                             node.getMessageQueue().remove(msg);
                         }
                     }
-                    node.getMessageQueue().add(new Message(data, packet.getSocketAddress()));
+                    //node.getMessageQueue().add(new Message(data, packet.getSocketAddress()));
+                    node.addMessagesToAll(data, packet.getSocketAddress());
                 }
             }
             catch(IOException e)

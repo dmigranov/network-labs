@@ -1,8 +1,10 @@
 import java.io.IOException;
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -128,5 +130,46 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
 
     public double getLossQuota() {
         return lossQuota;
+    }
+
+    public void deleteSource() {
+
+    }
+
+    public void addMessagesToAll(byte[] data) { //"original" message
+        if (!this.isRoot())
+        {
+            messageQueue.add(new Message(data, parentAddress));
+        }
+        for (InetSocketAddress childAddress : children)
+        {
+            messageQueue.add(new Message(data, childAddress));
+        }
+    }
+
+    public void addMessagesToAll(byte[] data, SocketAddress source) { //non-original message (re-sending)
+        if (!this.isRoot() && !source.equals(parentAddress))
+        {
+            messageQueue.add(new Message(data, parentAddress, source));
+        }
+        for (InetSocketAddress childAddress : children)
+        {
+            if(!source.equals(childAddress)) {
+                messageQueue.add(new Message(data, childAddress, source));
+            }
+        }
+        //ack!
+        byte[] uuidBytes = new byte[16];
+        byte[] newData = new byte[17];
+        newData[0] = msgAck;
+        UUID uuid = UUID.nameUUIDFromBytes(data);
+        ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        System.arraycopy(uuidBytes, 0, newData,1, 16);
+        messageQueue.add(new Message(newData, childAddress, source));
+        /*packet = new DatagramPacket(data, data.length, msg.getSource());
+        node.getSocket().send(packet); //this is ack!*/
+
     }
 }

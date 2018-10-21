@@ -28,12 +28,14 @@ public class ChatWriter// implements Runnable
                 if (msg == null)
                     continue;
 
-                msg.incrementCount();
-                //if incCount > ...
-                //node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
+                if (msg.incrementCount() > Message.maxTryCount)
+                {
+
+                }
+                node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
 
                 byte[] data = msg.getData();
-                if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
+                /*if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
                 {
 
                     //System.out.println("I'm here");
@@ -47,7 +49,7 @@ public class ChatWriter// implements Runnable
                         packet = new DatagramPacket(data, data.length, childAddress);
                         node.getSocket().send(packet); //TODO: Acknowledgement!
                     }
-                }
+                }*/
                 /*if(!msg.isOriginal())
                 {
                     data = new byte[17];

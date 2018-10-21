@@ -11,11 +11,13 @@ public class Message {
     private int tryCount = 0;
     public static final int maxTryCount = 5;
     private SocketAddress source  = null;
+    private SocketAddress dest = null;
     private boolean isOriginal;
 
 
-    public Message(byte[] data) {
+    public Message(byte[] data, SocketAddress dest) {
         this.data = data;
+        this.dest = dest;
         /*byte[] uuidData = new byte[data.length - 1];
         System.arraycopy(data, 1, uuidData,0, data.length - 1);*/
         isOriginal = true;
@@ -32,8 +34,8 @@ public class Message {
 
     }
 
-    public Message(byte[] data, SocketAddress source) {
-        this(data);
+    public Message(byte[] data, SocketAddress source, SocketAddress dest) {
+        this(data, dest);
         this.source = source;
         isOriginal = false;
     }
@@ -53,9 +55,10 @@ public class Message {
     public boolean isOriginal() {
         return isOriginal;
     }
-    public void incrementCount()
+    int incrementCount()
     {
         tryCount++;
+        return tryCount;
     }
 
 
