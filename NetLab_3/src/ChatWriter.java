@@ -33,7 +33,7 @@ public class ChatWriter// implements Runnable
                     //delete the node that doesn't answer
                     continue;
                 }
-                node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
+                //node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
 
                 packet = new DatagramPacket(msg.getData(), msg.getData().length, msg.getDest());
                 node.getSocket().send(packet);
