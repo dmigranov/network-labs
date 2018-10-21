@@ -22,8 +22,9 @@ public class Message {
         System.arraycopy(data, 1, uuidData,0, data.length - 1);*/
         isOriginal = true;
         uuid = UUID.nameUUIDFromBytes(data); //including the first byte
+        System.out.println("Constr: " + uuid);
         /*try {
-            System.out.println("Constr: " + new String(data, "UTF-8"));
+            System.out.println("Constr: " + new String(data, "UTF-8").substring(1));
         }
         catch(UnsupportedEncodingException e)
         {}*/

@@ -44,12 +44,15 @@ public class ChatReader implements Runnable
                 }
                 else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
-                    String str = (new String(data, "UTF-8")).substring(1);
-                    System.out.println(str);
+                    String str = (new String(data, "UTF-8")).replace("\0", "");
+
+                    System.out.println(str.substring(1));
                     //node.getMessageQueue().add(new Message(data, packet.getSocketAddress())); //там рассылка другим
                     node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
 
-                    UUID uuid = UUID.nameUUIDFromBytes(data);
+                    //UUID uuid = UUID.nameUUIDFromBytes(new String(data, "UTF-8").getBytes("UTF-8"));
+                    UUID uuid = UUID.nameUUIDFromBytes(str.getBytes("UTF-8"));
+                    System.out.println("Child sent to father UUID: " + uuid);
                     data = new byte[17];
                     byte[] uuidBytes = new byte[16];
                     //System.out.println("Sent: " + uuid);

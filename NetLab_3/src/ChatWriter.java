@@ -29,10 +29,10 @@ public class ChatWriter// implements Runnable
                     if (msg == null)
                         continue;
 
-                    /*if (msg.incrementCount() > Message.maxTryCount) {
+                    if (msg.incrementCount() > Message.maxTryCount) {
                         //delete the node that doesn't answer
                         continue;
-                    }*/
+                    }
 
                     node.getMessageQueue().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
                 }
