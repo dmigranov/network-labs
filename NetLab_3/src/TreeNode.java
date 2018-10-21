@@ -20,6 +20,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     private boolean isRoot = true;
     private Queue<Message> messageQueue = new ConcurrentLinkedQueue<>();
     private Queue<Message> sentMessages = new ConcurrentLinkedQueue<>();
+    //looks like I need another queue: of received messages, or maybe it should be combined with messageQueue?
     //maybe i'll need another queue/set to avoid resending
     //private List<Message> messageList = new CopyOnWriteArrayList<>();
 
