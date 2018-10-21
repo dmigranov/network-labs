@@ -126,10 +126,6 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         return lossQuota;
     }
 
-    public void deleteSource() {
-
-    }
-
     public void addMessagesToAll(byte[] data) { //"original" message
         if (!this.isRoot())
         {
@@ -152,24 +148,6 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
                 messageQueue.add(new Message(data, childAddress/*, source*/));
             }
         }
-        //ack! msgAck(1b) + 16b UUID
-        //I understood what the problem is! ack, as a message, should be acknowledged too! that's the trouble
-        //so what I should do is to delete this code
-        //and send ack directly from reader or writer
-        //no, not from writer!!! because writer is for every message
-        /*byte[] uuidBytes = new byte[16];
-        byte[] newData = new byte[17];
-        newData[0] = msgAck;
-        UUID uuid = UUID.nameUUIDFromBytes(data);
-        ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
-        bb.putLong(uuid.getMostSignificantBits());
-        bb.putLong(uuid.getLeastSignificantBits());
-        System.arraycopy(uuidBytes, 0, newData,1, 16);
-        messageQueue.add(new Message(newData, source));*/
-        /*packet = new DatagramPacket(data, data.length, msg.getSource());
-        node.getSocket().send(packet); //this is ack!*/
-
-
     }
 
     public Queue<Message> getSentMessages() {
