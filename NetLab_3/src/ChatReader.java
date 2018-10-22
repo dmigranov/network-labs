@@ -6,7 +6,7 @@ import java.util.*;
 
 public class ChatReader implements Runnable
 {
-    private TreeNode node = null;
+    private TreeNode node;
     private Deque<UUID> receivedMessages = new LinkedList<>(); //or uuidBytes?
 
     public ChatReader(TreeNode node)
@@ -54,6 +54,7 @@ public class ChatReader implements Runnable
                         receivedMessages.addFirst(uuid);
                         //node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
                         node.addMessagesToAll(str.getBytes("UTF-8"), packet.getSocketAddress());
+                        //TODO: низлежащий код заменить на вызов node.getAckMessage (чтобы ack переотправлялся)
                         data = new byte[17];
                         byte[] uuidBytes = new byte[16];
                         ByteBuffer bb = ByteBuffer.wrap(uuidBytes);

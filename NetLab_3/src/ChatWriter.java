@@ -4,7 +4,7 @@ import java.net.SocketAddress;
 
 public class ChatWriter// implements Runnable
 {
-    private TreeNode node = null;
+    private TreeNode node;
 
     public ChatWriter(TreeNode node)
     {
@@ -12,7 +12,7 @@ public class ChatWriter// implements Runnable
     }
 
     public void run() {
-        DatagramPacket packet; //TODO: change size? size = 508? 512? 500? fragmentation...
+        DatagramPacket packet; //change size? size = 508? 512? 500? fragmentation...
 
 
         try
@@ -38,20 +38,20 @@ public class ChatWriter// implements Runnable
                 packet = new DatagramPacket(msg.getData(), msg.getData().length, msg.getDest());
                 node.getSocket().send(packet);
 
-                node.getSentMessages().add(msg); //TODO: !!!Раскомментить когда подтверждение доставки!!!
+                node.getSentMessages().add(msg);
                 /*if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
                 {
 
                     //System.out.println("I'm here");
                     packet = new DatagramPacket(data, data.length, node.getParentAddress());
-                    node.getSocket().send(packet); //TODO: Acknowledgement!!!!!
+                    node.getSocket().send(packet);
                 }
 
                 for (InetSocketAddress childAddress : node.getChildrenAddresses())
                 {
                     if(msg.isOriginal() || !msg.getSource().equals(childAddress)) {
                         packet = new DatagramPacket(data, data.length, childAddress);
-                        node.getSocket().send(packet); //TODO: Acknowledgement!
+                        node.getSocket().send(packet);
                     }
                 }*/
                 /*if(!msg.isOriginal())

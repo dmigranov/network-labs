@@ -70,7 +70,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
 
         try {
             socket.setSoTimeout(5000);
-
+            //TODO: отправить несколько пакетов (и при получении убедиться, что они не приходят повторно)
             socket.send(packet);
             DatagramPacket answer = new DatagramPacket(new byte[1], 1);
             socket.receive(answer);
@@ -123,6 +123,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     public void addMessagesToAll(byte[] data) { //"original" message
         if (!this.isRoot())
         {
+            //TODO: возможно, стоит отправлять время в миллисекундах, чтобы была уникальность у одинаковых сообщений
             messageQueue.add(new Message(data, parentAddress));
         }
         for (InetSocketAddress childAddress : children)
@@ -144,7 +145,7 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         }
     }
 
-    public void addAckMessage(SocketAddress dest)
+    public void addAckMessage(SocketAddress dest) //TODO: реализовать
     {
 
     }
@@ -161,10 +162,12 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
             System.out.println("Parent doesn't answer, this node is considered a root now");
         }
         else {
-            for (SocketAddress child : children)
-                if (dest.equals(child))
+            for (InetSocketAddress child : children)
+                if (dest.equals(child)) {
                     children.remove(child);
-            System.out.println("Child doesn't answer, won't send messages to it anymore");
+                    System.out.println("Child doesn't answer, won't send messages to it anymore");
+                }
+            //System.out.println("Child doesn't answer, won't send messages to it anymore");
         }
     }
 }
