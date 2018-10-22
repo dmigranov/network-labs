@@ -52,11 +52,20 @@ public class ChatReader implements Runnable
                         System.out.println(str.substring(1));
                         receivedMessages.addFirst(uuid);
                         node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
+                        data = new byte[17];
+                        byte[] uuidBytes = new byte[16];
+                        ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
+                        bb.putLong(uuid.getMostSignificantBits());
+                        bb.putLong(uuid.getLeastSignificantBits());
+                        data[0] = TreeNode.msgAck;
+                        System.arraycopy(uuidBytes, 0, data, 1, 16);
+                        packet = new DatagramPacket(data, data.length, packet.getSocketAddress());
+                        node.getSocket().send(packet);
                     }
 
                     //System.out.println("Child sent to father UUID: " + uuid);
-                    //right now is re-sends acks until message is retieved from deque. that's bad
-                    data = new byte[17];
+                    //this  re-sends acks until message is retieved from deque. that's bad
+                    /*data = new byte[17];
                     byte[] uuidBytes = new byte[16];
                     ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
                     bb.putLong(uuid.getMostSignificantBits());
@@ -64,7 +73,7 @@ public class ChatReader implements Runnable
                     data[0] = TreeNode.msgAck;
                     System.arraycopy(uuidBytes, 0, data, 1, 16);
                     packet = new DatagramPacket(data, data.length, packet.getSocketAddress());
-                    node.getSocket().send(packet);
+                    node.getSocket().send(packet);*/
 
                 }
                 else if (data[0] == TreeNode.msgAck)
