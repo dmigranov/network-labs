@@ -41,7 +41,7 @@ public class ChatReader implements Runnable
                 else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
                     if(random.nextInt(100) < node.getLossQuota()) {
-                        System.out.println("Threw out a packet");
+                        //System.out.println("Threw out a packet");
                         continue; //сейчас теряются только сами сообщения, ack'и не теряются
                     }
                     String str = (new String(data, "UTF-8")).replace("\0", "");
@@ -90,7 +90,7 @@ public class ChatReader implements Runnable
                     //for (Message msg : node.getMessageQueue()) {
                     for (Message msg : node.getSentMessages()) {
                         if (msg.getUUID().equals((uuid)) && msg.getDest().equals(packet.getSocketAddress())) {
-                            System.out.println("Deleted");
+                            //System.out.println("Deleted");
                             node.getSentMessages().remove(msg);
                         }
 

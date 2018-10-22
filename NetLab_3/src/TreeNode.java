@@ -157,4 +157,19 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     public Queue<Message> getSentMessages() {
         return sentMessages;
     }
+
+    public void deleteConnection(SocketAddress dest) {
+        if (dest.equals(parentAddress))
+        {
+            isRoot = true;
+            parentAddress = null;
+            System.out.println("Parent doesn't answer, this node is considered a root now");
+        }
+        else {
+            for (SocketAddress child : children)
+                if (dest.equals(child))
+                    children.remove(child);
+            System.out.println("Child doesn't answer, won't send messages to it anymore");
+        }
+    }
 }

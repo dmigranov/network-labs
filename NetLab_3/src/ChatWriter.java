@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.SocketAddress;
 
 public class ChatWriter// implements Runnable
 {
@@ -27,7 +28,7 @@ public class ChatWriter// implements Runnable
 
                 if (msg.incrementCount() > Message.maxTryCount)
                 {
-                    //delete the node that doesn't answer
+                    //node.deleteConnection(msg.getDest());
                     continue;
                 }
 
@@ -71,4 +72,6 @@ public class ChatWriter// implements Runnable
             System.exit(5);
         }
     }
+
+
 }
