@@ -74,12 +74,6 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
             socket.send(packet);
             DatagramPacket answer = new DatagramPacket(new byte[1], 1);
             socket.receive(answer);
-            /*if (answer.getData()[0] != childAck) //is this system good???
-            {
-                //System.out.println("Can't connect to a parent! The node is considered a root now");
-                isRoot = true;
-            }*/
-
         }
         catch(IOException e)
         {
@@ -98,10 +92,6 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         return children;
     }
 
-    public int getOwnPort()
-    {
-        return ownPort;
-    }
 
     public boolean isRoot()
     {
@@ -152,6 +142,11 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
                 messageQueue.add(new Message(data, childAddress/*, source*/));
             }
         }
+    }
+
+    public void addAckMessage(SocketAddress dest)
+    {
+
     }
 
     public Queue<Message> getSentMessages() {

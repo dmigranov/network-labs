@@ -28,7 +28,7 @@ public class ChatWriter// implements Runnable
 
                 if (msg.incrementCount() > Message.maxTryCount)
                 {
-                    //node.deleteConnection(msg.getDest());
+                    node.deleteConnection(msg.getDest());
                     continue;
                 }
 

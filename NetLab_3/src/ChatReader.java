@@ -21,6 +21,10 @@ public class ChatReader implements Runnable
         {
             try
             {
+                if(random.nextInt(100) < node.getLossQuota()) {
+                    continue;
+                }
+
                 if (receivedMessages.size() > 50)
                     clearOld();
                 //block for a time period only???!
@@ -40,10 +44,7 @@ public class ChatReader implements Runnable
                 }
                 else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
-                    if(random.nextInt(100) < node.getLossQuota()) {
-                        //System.out.println("Threw out a packet");
-                        continue; //сейчас теряются только сами сообщения, ack'и не теряются
-                    }
+
                     String str = (new String(data, "UTF-8")).replace("\0", "");
                     UUID uuid = UUID.nameUUIDFromBytes(str.getBytes("UTF-8"));
                     if(!receivedMessages.contains(uuid))
@@ -51,7 +52,8 @@ public class ChatReader implements Runnable
                         //System.out.print("I'm here: ");
                         System.out.println(str.substring(1));
                         receivedMessages.addFirst(uuid);
-                        node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
+                        //node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
+                        node.addMessagesToAll(str.getBytes("UTF-8"), packet.getSocketAddress());
                         data = new byte[17];
                         byte[] uuidBytes = new byte[16];
                         ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
@@ -95,8 +97,6 @@ public class ChatReader implements Runnable
                         }
 
                     }
-
-                    //node.addMessagesToAll(data, packet.getSocketAddress());
                 }
             }
             catch(IOException e)

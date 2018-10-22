@@ -16,8 +16,6 @@ public class ChatResender implements Runnable {
             }
             catch(InterruptedException e)
             {}
-            /*if (node.getSentMessages().peek() != null)
-                System.out.println(node.getSentMessages());*/
             node.getMessageQueue().addAll(node.getSentMessages());
             node.getSentMessages().clear();
             
