@@ -21,12 +21,6 @@ public class Message {
         isOriginal = true;
         uuid = UUID.nameUUIDFromBytes(data); //including the first byte
         //System.out.println("Constr: " + uuid);
-        /*try {
-            System.out.println("Constr: " + new String(data, "UTF-8").substring(1));
-        }
-        catch(UnsupportedEncodingException e)
-        {}*/
-        //System.out.println("Constr: " + Arrays.toString(data));
         ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());

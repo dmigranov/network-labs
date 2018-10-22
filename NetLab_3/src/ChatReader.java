@@ -2,12 +2,12 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 public class ChatReader implements Runnable
 {
     private TreeNode node = null;
+    private Deque<UUID> receivedMessages = new LinkedList<>(); //or uuidBytes?
 
     public ChatReader(TreeNode node)
     {
@@ -21,7 +21,8 @@ public class ChatReader implements Runnable
         {
             try
             {
-
+                if (receivedMessages.size() > 50)
+                    clearOld();
                 //block for a time period only???!
                 DatagramPacket packet = new DatagramPacket(new byte[512], 512);
                 node.getSocket().receive(packet);
@@ -40,21 +41,23 @@ public class ChatReader implements Runnable
                 else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
                     if(random.nextInt(100) < node.getLossQuota()) {
-                        //System.out.println("Lost a packet");
-                        continue;
+                        System.out.println("Threw out a packet");
+                        continue; //сейчас теряются только сами сообщения, ack'и не теряются
                     }
                     String str = (new String(data, "UTF-8")).replace("\0", "");
-
-                    System.out.println(str.substring(1));
-                    //node.getMessageQueue().add(new Message(data, packet.getSocketAddress())); //там рассылка другим
-                    node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
-
-                    //UUID uuid = UUID.nameUUIDFromBytes(new String(data, "UTF-8").getBytes("UTF-8"));
                     UUID uuid = UUID.nameUUIDFromBytes(str.getBytes("UTF-8"));
+                    if(!receivedMessages.contains(uuid))
+                    {
+                        //System.out.print("I'm here: ");
+                        System.out.println(str.substring(1));
+                        receivedMessages.addFirst(uuid);
+                        node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
+                    }
+
                     //System.out.println("Child sent to father UUID: " + uuid);
+                    //right now is re-sends acks until message is retieved from deque. that's bad
                     data = new byte[17];
                     byte[] uuidBytes = new byte[16];
-                    //System.out.println("Sent: " + uuid);
                     ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
                     bb.putLong(uuid.getMostSignificantBits());
                     bb.putLong(uuid.getLeastSignificantBits());
@@ -66,7 +69,6 @@ public class ChatReader implements Runnable
                 }
                 else if (data[0] == TreeNode.msgAck)
                 {
-                    //
                     byte[] uuidBytes = new byte[16];
                     System.arraycopy(data, 1, uuidBytes, 0, 16/*msg.getUUIDBytes().length*/);
                     ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
@@ -91,6 +93,14 @@ public class ChatReader implements Runnable
             {
                 continue;
             }
+        }
+    }
+
+    private void clearOld() {
+        while(receivedMessages.size() > 50)
+        {
+            receivedMessages.pollLast();
+            System.out.println("cleared old");
         }
     }
 }
