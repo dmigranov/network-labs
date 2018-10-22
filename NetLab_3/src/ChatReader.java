@@ -78,6 +78,7 @@ public class ChatReader implements Runnable
                 }
                 else if (data[0] == TreeNode.msgAck)
                 {
+                    //когда мы посылаем от одного одинаковые сообщения, у них один текст! поэтому по доставке одного удаляются оба
                     byte[] uuidBytes = new byte[16];
                     System.arraycopy(data, 1, uuidBytes, 0, 16/*msg.getUUIDBytes().length*/);
                     ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
@@ -88,8 +89,8 @@ public class ChatReader implements Runnable
 
                     //for (Message msg : node.getMessageQueue()) {
                     for (Message msg : node.getSentMessages()) {
-                        if (msg.getUUID().equals((uuid))) {
-                            //System.out.println("Deleted");
+                        if (msg.getUUID().equals((uuid)) && msg.getDest().equals(packet.getSocketAddress())) {
+                            System.out.println("Deleted");
                             node.getSentMessages().remove(msg);
                         }
 

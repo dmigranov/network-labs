@@ -1,7 +1,9 @@
 import java.io.IOException;
 import java.net.*;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -20,7 +22,8 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     private boolean isRoot = true;
     private Queue<Message> messageQueue = new ConcurrentLinkedQueue<>();
     private Queue<Message> sentMessages = new ConcurrentLinkedQueue<>();
-    //looks like I need another queue: of received messages, or maybe it should be combined with messageQueue?
+    //private Deque<UUID> receivedMessages = new LinkedList<>(); //or uuidBytes?
+
     //maybe i'll need another queue/set to avoid resending
     //private List<Message> messageList = new CopyOnWriteArrayList<>();
 
