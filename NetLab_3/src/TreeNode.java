@@ -70,10 +70,12 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
 
         try {
             socket.setSoTimeout(5000);
-            //TODO: отправить несколько пакетов (и при получении убедиться, что они не приходят повторно)
-            socket.send(packet);
+            for(int i = 0; i < 5; i++)
+                socket.send(packet);
             DatagramPacket answer = new DatagramPacket(new byte[1], 1);
             socket.receive(answer);
+            if(answer.getData()[0] != childAck)
+                throw new IOException();
         }
         catch(IOException e)
         {
@@ -159,13 +161,13 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         {
             isRoot = true;
             parentAddress = null;
-            System.out.println("Parent doesn't answer, this node is considered a root now");
+            System.out.println("Parent " + parentAddress + " doesn't answer, this node is considered a root now");
         }
         else {
             for (InetSocketAddress child : children)
                 if (dest.equals(child)) {
                     children.remove(child);
-                    System.out.println("Child doesn't answer, won't send messages to it anymore");
+                    System.out.println("Child " + child + " doesn't answer, won't send messages to it anymore");
                 }
             //System.out.println("Child doesn't answer, won't send messages to it anymore");
         }

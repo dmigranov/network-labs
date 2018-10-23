@@ -21,15 +21,17 @@ public class ChatReader implements Runnable
         {
             try
             {
-                if(random.nextInt(100) < node.getLossQuota()) {
-                    continue;
-                }
+
 
                 if (receivedMessages.size() > 50)
                     clearOld();
-                //block for a time period only???!
                 DatagramPacket packet = new DatagramPacket(new byte[512], 512);
                 node.getSocket().receive(packet);
+
+                if(random.nextInt(100) < node.getLossQuota()) {
+                    //System.out.
+                    continue;
+                }
 
                 byte[] data = packet.getData();
                 if (data[0] == TreeNode.childByte)
@@ -38,9 +40,10 @@ public class ChatReader implements Runnable
                     msg[0] = TreeNode.childAck;
                     DatagramPacket answer = new DatagramPacket(msg, msg.length, packet.getSocketAddress());
                     node.getSocket().send(answer);
-
-                    System.out.println("New child connected: " + packet.getAddress() + ":" + packet.getPort());
-                    node.addChild(new InetSocketAddress(packet.getAddress(), packet.getPort()));
+                    if(!node.getChildrenAddresses().contains(packet.getSocketAddress())) {
+                        System.out.println("New child connected: " + packet.getAddress() + ":" + packet.getPort());
+                        node.addChild(new InetSocketAddress(packet.getAddress(), packet.getPort()));
+                    }
                 }
                 else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
@@ -54,7 +57,7 @@ public class ChatReader implements Runnable
                         receivedMessages.addFirst(uuid);
                         //node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
                         node.addMessagesToAll(str.getBytes("UTF-8"), packet.getSocketAddress());
-                        //TODO: низлежащий код заменить на вызов node.getAckMessage (чтобы ack переотправлялся)
+                        //TODO: низлежащий код заменить на вызов node.addAckMessage (чтобы ack переотправлялся)
                         data = new byte[17];
                         byte[] uuidBytes = new byte[16];
                         ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
