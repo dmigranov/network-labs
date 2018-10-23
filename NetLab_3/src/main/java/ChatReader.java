@@ -46,11 +46,17 @@ public class ChatReader implements Runnable
                 }
                 else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
-                    String textStr = (new String(data, "UTF-8").substring(9)).replace("\0", "");
-                    byte[] strBytes = textStr.getBytes("UTF-8");
+                    /*String textStr = (new String(data, "UTF-8").substring(9)).replace("\0", "");
+                    byte[] strBytes = textStr.getBytes("UTF-8");*/
+                    byte[] strBytes = new byte[data.length - 9];
+                    System.arraycopy(data, 9, strBytes, 0, data.length - 9);
+                    String textStr = new String(strBytes, "UTF-8").replace("\0", "");
+                    strBytes = textStr.getBytes("UTF-8");
+
                     byte[] newData = new byte[9 + strBytes.length];
                     System.arraycopy(data, 0, newData, 0, 9);
                     System.arraycopy(strBytes, 0, newData, 9, strBytes.length);
+                    //System.out.println(Arrays.toString(data));
                     data = newData;
                     UUID uuid = UUID.nameUUIDFromBytes(data);
                     if(!receivedMessages.contains(uuid))
@@ -65,6 +71,9 @@ public class ChatReader implements Runnable
                         String formattedTime = String.format("%02d.%02d %02d:%02d:%02d", cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
                         //System.out.println(cal.get(Calendar.DAY_OF_MONTH) + "." + (cal.get(Calendar.MONTH) + 1) + " " + cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND) +  "   " + str2);
                         System.out.println(formattedTime + "   " + textStr);
+
+
+                        //System.out.println(Arrays.toString(strBytes));
                         receivedMessages.addFirst(uuid);
                         node.addMessagesToAll(data, packet.getSocketAddress());
                     }
@@ -112,7 +121,7 @@ public class ChatReader implements Runnable
         while(receivedMessages.size() > 50)
         {
             receivedMessages.pollLast();
-            System.out.println("cleared old");
+            //System.out.println("cleared old");
         }
     }
 }

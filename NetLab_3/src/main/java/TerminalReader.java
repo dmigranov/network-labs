@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class TerminalReader implements Runnable {
 
@@ -23,6 +24,7 @@ public class TerminalReader implements Runnable {
                 byte [] data;
                 String resStr = node.getNodeName() + ": " + str;
                 byte[] strBytes = resStr.getBytes("UTF-8");
+                //System.out.println(Arrays.toString(strBytes));
                 data = new byte[strBytes.length + 9];
                 byte[] millisBytes = new byte[8];
                 ByteBuffer bb = ByteBuffer.wrap(millisBytes);
@@ -30,6 +32,7 @@ public class TerminalReader implements Runnable {
                 data[0] = TreeNode.msgByte;
                 System.arraycopy(millisBytes, 0, data, 1, 8);
                 System.arraycopy(strBytes, 0, data, 9, strBytes.length);
+                //System.out.println(Arrays.toString(data));
                 //node.getMessageQueue().add(new Message(data));
                 node.addMessagesToAll(data);
             }
