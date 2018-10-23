@@ -21,24 +21,21 @@ public class ChatWriter// implements Runnable
             {
                 Message msg;
 
+                synchronized (node) {
+                    msg = node.getMessageQueue().poll();
+                    if (msg == null)
+                        continue;
 
-                msg  = node.getMessageQueue().poll();
-                if (msg == null)
-                    continue;
+                    if (msg.incrementCount() > Message.maxTryCount) {
+                        node.deleteConnection(msg.getDest());
+                        continue;
+                    }
 
-                if (msg.incrementCount() > Message.maxTryCount)
-                {
-                    node.deleteConnection(msg.getDest());
-                    continue;
+                    packet = new DatagramPacket(msg.getData(), msg.getData().length, msg.getDest());
+                    node.getSocket().send(packet);
+
+                    node.getSentMessages().add(msg);
                 }
-
-
-
-
-                packet = new DatagramPacket(msg.getData(), msg.getData().length, msg.getDest());
-                node.getSocket().send(packet);
-
-                node.getSentMessages().add(msg);
                 /*if (!node.isRoot() && (msg.isOriginal() || !msg.getSource().equals(node.getParentAddress())))
                 {
 

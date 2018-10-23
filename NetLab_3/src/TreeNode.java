@@ -160,8 +160,8 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         if (dest.equals(parentAddress))
         {
             isRoot = true;
-            parentAddress = null;
             System.out.println("Parent " + parentAddress + " doesn't answer, this node is considered a root now");
+            parentAddress = null;
         }
         else {
             for (InetSocketAddress child : children)

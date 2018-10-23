@@ -27,12 +27,6 @@ public class Message {
 
     }
 
-    /*public Message(byte[] data, SocketAddress source, SocketAddress dest) {
-        this(data, dest);
-        this.source = source;
-        isOriginal = false;
-    }*/
-
     public byte[] getData() {
         return data;
     }

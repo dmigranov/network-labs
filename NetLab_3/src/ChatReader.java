@@ -21,8 +21,6 @@ public class ChatReader implements Runnable
         {
             try
             {
-
-
                 if (receivedMessages.size() > 50)
                     clearOld();
                 DatagramPacket packet = new DatagramPacket(new byte[512], 512);
@@ -52,12 +50,11 @@ public class ChatReader implements Runnable
                     UUID uuid = UUID.nameUUIDFromBytes(str.getBytes("UTF-8"));
                     if(!receivedMessages.contains(uuid))
                     {
-                        //System.out.print("I'm here: ");
                         System.out.println(str.substring(1));
                         receivedMessages.addFirst(uuid);
-                        //node.addMessagesToAll(data, packet.getSocketAddress()); //рассылка другим включая ack
                         node.addMessagesToAll(str.getBytes("UTF-8"), packet.getSocketAddress());
                         //TODO: низлежащий код заменить на вызов node.addAckMessage (чтобы ack переотправлялся)
+                        //node.addAckMessage(byte[d]);
                         data = new byte[17];
                         byte[] uuidBytes = new byte[16];
                         ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
@@ -66,7 +63,8 @@ public class ChatReader implements Runnable
                         data[0] = TreeNode.msgAck;
                         System.arraycopy(uuidBytes, 0, data, 1, 16);
                         packet = new DatagramPacket(data, data.length, packet.getSocketAddress());
-                        node.getSocket().send(packet);
+                        for (int i = 0; i < 5; i++)
+                            node.getSocket().send(packet);
                     }
 
                     //System.out.println("Child sent to father UUID: " + uuid);
@@ -84,7 +82,6 @@ public class ChatReader implements Runnable
                 }
                 else if (data[0] == TreeNode.msgAck)
                 {
-                    //когда мы посылаем от одного одинаковые сообщения, у них один текст! поэтому по доставке одного удаляются оба
                     byte[] uuidBytes = new byte[16];
                     System.arraycopy(data, 1, uuidBytes, 0, 16/*msg.getUUIDBytes().length*/);
                     ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
@@ -93,7 +90,6 @@ public class ChatReader implements Runnable
                     UUID uuid = new UUID(mostSigBits, leastSigBits);
                     //System.out.println("father got UUID back: " + uuid);
 
-                    //for (Message msg : node.getMessageQueue()) {
                     for (Message msg : node.getSentMessages()) {
                         if (msg.getUUID().equals((uuid)) && msg.getDest().equals(packet.getSocketAddress())) {
                             //System.out.println("Deleted");
