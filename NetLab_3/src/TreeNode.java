@@ -147,11 +147,6 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         }
     }
 
-    public void addAckMessage(SocketAddress dest) //TODO: реализовать
-    {
-
-    }
-
     public Queue<Message> getSentMessages() {
         return sentMessages;
     }

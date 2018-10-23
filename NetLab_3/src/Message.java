@@ -7,7 +7,7 @@ public class Message {
     private byte[] uuidBytes = new byte[16];
     private byte[] data ;
     private int tryCount = 0;
-    public static final int maxTryCount = 5;
+    public static final int maxTryCount = 10;
     private SocketAddress source  = null;
     private SocketAddress dest = null;
     private boolean isOriginal;
@@ -29,18 +29,6 @@ public class Message {
 
     public byte[] getData() {
         return data;
-    }
-
-    public byte[] getUUIDBytes() {
-        return uuidBytes;
-    }
-
-    public SocketAddress getSource() {
-        return source;
-    }
-
-    public boolean isOriginal() {
-        return isOriginal;
     }
 
     public UUID getUUID() {
