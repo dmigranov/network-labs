@@ -1,6 +1,6 @@
 public class ChatResender implements Runnable {
 
-    private TreeNode node;
+    private final TreeNode node;
     public ChatResender(TreeNode node)
     {
         this.node = node;

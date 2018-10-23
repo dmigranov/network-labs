@@ -4,7 +4,7 @@ import java.net.SocketAddress;
 
 public class ChatWriter// implements Runnable
 {
-    private TreeNode node;
+    private final TreeNode node;
 
     public ChatWriter(TreeNode node)
     {

@@ -5,7 +5,7 @@ import java.io.InputStreamReader;
 public class TerminalReader implements Runnable {
 
 
-    private TreeNode node = null;
+    private final TreeNode node;
 
     public TerminalReader(TreeNode node)
     {
