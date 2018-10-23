@@ -53,8 +53,6 @@ public class TreeNode
     }
     private void notifyParent()
     {
-
-
         byte[] msg = new byte[1];
         msg[0] = childByte;
         DatagramPacket packet = new DatagramPacket(msg, msg.length, parentAddress);
@@ -84,7 +82,6 @@ public class TreeNode
     {
         return children;
     }
-
 
     public boolean isRoot()
     {
@@ -116,7 +113,6 @@ public class TreeNode
     public void addMessagesToAll(byte[] data) { //"original" message
         if (!this.isRoot())
         {
-            //TODO: возможно, стоит отправлять время в миллисекундах, чтобы была уникальность у одинаковых сообщений
             messageQueue.add(new Message(data, parentAddress));
         }
         for (InetSocketAddress childAddress : children)
