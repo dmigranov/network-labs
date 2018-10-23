@@ -16,8 +16,6 @@ public class Message {
     public Message(byte[] data, SocketAddress dest) {
         this.data = data;
         this.dest = dest;
-        /*byte[] uuidData = new byte[data.length - 1];
-        System.arraycopy(data, 1, uuidData,0, data.length - 1);*/
         isOriginal = true;
         uuid = UUID.nameUUIDFromBytes(data); //including the first byte
         //System.out.println("Constr: " + uuid);

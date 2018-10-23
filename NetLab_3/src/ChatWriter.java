@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.SocketAddress;
 
 public class ChatWriter// implements Runnable
 {
@@ -26,7 +25,6 @@ public class ChatWriter// implements Runnable
                     if (msg == null)
                         continue;
                     int iv = msg.incrementCount();
-                    //System.out.println(msg.toString() + " " + iv);
                     if (iv > Message.maxTryCount) {
                         node.deleteConnection(msg.getDest());
                         continue;

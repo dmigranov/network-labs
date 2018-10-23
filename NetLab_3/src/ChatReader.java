@@ -27,7 +27,6 @@ public class ChatReader implements Runnable
                 node.getSocket().receive(packet);
 
                 if(random.nextInt(100) < node.getLossQuota()) {
-                    //System.out.
                     continue;
                 }
 
@@ -45,22 +44,15 @@ public class ChatReader implements Runnable
                 }
                 else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
-
-                    //String str = (new String(data, "UTF-8")).replace("\0", "");
-                    //в случае с передачей времени так нельзя будет делать, т.к будут нули. Подумать!
-                    //String str1 = new String(data, "UTF-8").substring(0, 8);
-                    String str2 = (new String(data, "UTF-8").substring(9)).replace("\0", "");
-                    byte[] strBytes = str2.getBytes("UTF-8");
-                    //String str = str1 + str2;
-                    byte[] newdata = new byte[9 + strBytes.length];
-                    System.arraycopy(data, 0, newdata, 0, 9);
-                    System.arraycopy(strBytes, 0, newdata, 9, strBytes.length);
-                    data = newdata;
+                    String textStr = (new String(data, "UTF-8").substring(9)).replace("\0", "");
+                    byte[] strBytes = textStr.getBytes("UTF-8");
+                    byte[] newData = new byte[9 + strBytes.length];
+                    System.arraycopy(data, 0, newData, 0, 9);
+                    System.arraycopy(strBytes, 0, newData, 9, strBytes.length);
+                    data = newData;
                     UUID uuid = UUID.nameUUIDFromBytes(data);
-                    //System.out.println(Arrays.toString(data));
                     if(!receivedMessages.contains(uuid))
                     {
-                        //byte[] millisBytes = str1.substring(1).getBytes("UTF-8");
                         byte[] millisBytes = new byte[8];
                         System.arraycopy(data, 1, millisBytes, 0, 8);
                         ByteBuffer bb = ByteBuffer.wrap(millisBytes);
@@ -70,19 +62,9 @@ public class ChatReader implements Runnable
                         cal.setTimeInMillis(dateMillis);
                         String formattedTime = String.format("%02d.%02d %02d:%02d:%02d", cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
                         //System.out.println(cal.get(Calendar.DAY_OF_MONTH) + "." + (cal.get(Calendar.MONTH) + 1) + " " + cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND) +  "   " + str2);
-                        System.out.println(formattedTime + "   " + str2);
+                        System.out.println(formattedTime + "   " + textStr);
                         receivedMessages.addFirst(uuid);
                         node.addMessagesToAll(data, packet.getSocketAddress());
-                        /*data = new byte[17];
-                        byte[] uuidBytes = new byte[16];
-                        ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
-                        bb.putLong(uuid.getMostSignificantBits());
-                        bb.putLong(uuid.getLeastSignificantBits());
-                        data[0] = TreeNode.msgAck;
-                        System.arraycopy(uuidBytes, 0, data, 1, 16);
-                        packet = new DatagramPacket(data, data.length, packet.getSocketAddress());
-                        for (int i = 0; i < 5; i++)
-                            node.getSocket().send(packet);*/
                     }
 
                     //System.out.println("Child sent to father UUID: " + uuid);
@@ -97,7 +79,6 @@ public class ChatReader implements Runnable
                     packet = new DatagramPacket(data, data.length, packet.getSocketAddress());
                     for (int i = 0; i < 5; i++)
                         node.getSocket().send(packet);
-
                 }
                 else if (data[0] == TreeNode.msgAck)
                 {
@@ -109,13 +90,11 @@ public class ChatReader implements Runnable
                         long leastSigBits = bb.getLong();
                         UUID uuid = new UUID(mostSigBits, leastSigBits);
                         //System.out.println("father got UUID back: " + uuid);
-
                         for (Message msg : node.getSentMessages()) {
                             if (msg.getUUID().equals((uuid)) && msg.getDest().equals(packet.getSocketAddress())) {
                                 //System.out.println("Deleted");
                                 node.getSentMessages().remove(msg);
                             }
-
                         }
                     }
                 }

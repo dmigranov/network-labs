@@ -1,15 +1,13 @@
 import java.io.IOException;
 import java.net.*;
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class TreeNode
 {
-private DatagramSocket socket = null; //shall be closed in CR or CW
+    private DatagramSocket socket = null; //shall be closed in CR or CW
 
     private String nodeName;
     private int lossQuota;
@@ -17,15 +15,10 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
     private InetSocketAddress parentAddress = null;
     //private List<InetSocketAddress> children = new ArrayList<>();
     private Set<InetSocketAddress> children = new CopyOnWriteArraySet<>();
-    //к вопросу о лишних записях в сете (мёртвых душах): просто удалять при проверке того, дошло ли сообщение, их из сета
-    //впрочем, тогда уже можно будет заменить сет на лист обратно
     private boolean isRoot = true;
     private Queue<Message> messageQueue = new ConcurrentLinkedQueue<>();
     private Queue<Message> sentMessages = new ConcurrentLinkedQueue<>();
-    //private Deque<UUID> receivedMessages = new LinkedList<>(); //or uuidBytes?
 
-    //maybe i'll need another queue/set to avoid resending
-    //private List<Message> messageList = new CopyOnWriteArrayList<>();
 
     public final static byte childByte = 100;
     public final static byte msgByte = 10;
@@ -57,8 +50,6 @@ private DatagramSocket socket = null; //shall be closed in CR or CW
         parentAddress = new InetSocketAddress(parentIP, parentPort);
 
         notifyParent();
-
-        //parent = null;
     }
     private void notifyParent()
     {

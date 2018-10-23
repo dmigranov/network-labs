@@ -6,7 +6,6 @@ public class ChatResender implements Runnable {
         this.node = node;
     }
 
-
     @Override
     public void run() {
         while(true)
