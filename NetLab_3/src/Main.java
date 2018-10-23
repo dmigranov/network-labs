@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -5,6 +6,13 @@ public class Main {
 
     public static void main(String[] args)
     {
+        /*byte[] data = {32, 0, 0, 31, 2, 2 ,2, 1};
+        try{
+
+        System.out.println(new String(data, "UTF-8").replace("\0", ""));
+        }catch(IOException e)
+        {}*/
+
         if(args.length < 3)
         {
             System.err.println("Not enough arguments");

@@ -1,6 +1,9 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Date;
 
 public class TerminalReader implements Runnable {
 
@@ -22,11 +25,18 @@ public class TerminalReader implements Runnable {
                 byte [] data;
                 String resStr = node.getNodeName() + ": " + str;
                 byte[] strBytes = resStr.getBytes("UTF-8");
-                //UUID uuid = UUID.nameUUIDFromBytes(strBytes); //16 bytes. I guess there is no need to send it - it can easily be recalculated!
 
-                data = new byte[strBytes.length + 1];
+                //data = new byte[strBytes.length + 1];
+                data = new byte[strBytes.length + 9];
+                byte[] millisBytes = new byte[8];
+                ByteBuffer bb = ByteBuffer.wrap(millisBytes);
+                bb.putLong(System.currentTimeMillis());
+                //System.out.println(new Date(System.currentTimeMillis()));
                 data[0] = TreeNode.msgByte;
-                System.arraycopy(strBytes, 0, data, 1, strBytes.length);
+                //data copyarray...
+                System.arraycopy(millisBytes, 0, data, 1, 8);
+                System.arraycopy(strBytes, 0, data, 9, strBytes.length);
+                //System.out.println(Arrays.toString(data));
 
                 //node.getMessageQueue().add(new Message(data));
                 node.addMessagesToAll(data);

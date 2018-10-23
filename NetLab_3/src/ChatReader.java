@@ -46,13 +46,32 @@ public class ChatReader implements Runnable
                 else if (data[0] == TreeNode.msgByte) //the first byte's first bit is 0, so UTF-8 sees it as a ASCII character
                 {
 
-                    String str = (new String(data, "UTF-8")).replace("\0", "");
-                    UUID uuid = UUID.nameUUIDFromBytes(str.getBytes("UTF-8"));
+                    //String str = (new String(data, "UTF-8")).replace("\0", "");
+                    //в случае с передачей времени так нельзя будет делать, т.к будут нули. Подумать!
+                    //String str1 = new String(data, "UTF-8").substring(0, 8);
+                    String str2 = (new String(data, "UTF-8").substring(9)).replace("\0", "");
+                    byte[] strBytes = str2.getBytes("UTF-8");
+                    //String str = str1 + str2;
+                    byte[] newdata = new byte[9 + strBytes.length];
+                    System.arraycopy(data, 0, newdata, 0, 9);
+                    System.arraycopy(strBytes, 0, newdata, 9, strBytes.length);
+                    data = newdata;
+                    UUID uuid = UUID.nameUUIDFromBytes(data);
+                    //System.out.println(Arrays.toString(data));
                     if(!receivedMessages.contains(uuid))
                     {
-                        System.out.println(str.substring(1));
+                        //byte[] millisBytes = str1.substring(1).getBytes("UTF-8");
+                        byte[] millisBytes = new byte[8];
+                        System.arraycopy(data, 1, millisBytes, 0, 8);
+                        ByteBuffer bb = ByteBuffer.wrap(millisBytes);
+                        long dateMillis = bb.getLong();
+                        //Date date = new Date(dateMillis);
+                        GregorianCalendar cal = new GregorianCalendar();
+                        cal.setTimeInMillis(dateMillis);
+
+                        System.out.println(cal.get(Calendar.DAY_OF_MONTH) + "." + (cal.get(Calendar.MONTH) + 1) + " " + cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND) +  "   " + str2);
                         receivedMessages.addFirst(uuid);
-                        node.addMessagesToAll(str.getBytes("UTF-8"), packet.getSocketAddress());
+                        node.addMessagesToAll(data, packet.getSocketAddress());
                         /*data = new byte[17];
                         byte[] uuidBytes = new byte[16];
                         ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
