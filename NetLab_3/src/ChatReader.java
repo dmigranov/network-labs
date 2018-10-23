@@ -68,8 +68,9 @@ public class ChatReader implements Runnable
                         //Date date = new Date(dateMillis);
                         GregorianCalendar cal = new GregorianCalendar();
                         cal.setTimeInMillis(dateMillis);
-
-                        System.out.println(cal.get(Calendar.DAY_OF_MONTH) + "." + (cal.get(Calendar.MONTH) + 1) + " " + cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND) +  "   " + str2);
+                        String formattedTime = String.format("%02d.%02d %02d:%02d:%02d", cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
+                        //System.out.println(cal.get(Calendar.DAY_OF_MONTH) + "." + (cal.get(Calendar.MONTH) + 1) + " " + cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND) +  "   " + str2);
+                        System.out.println(formattedTime + "   " + str2);
                         receivedMessages.addFirst(uuid);
                         node.addMessagesToAll(data, packet.getSocketAddress());
                         /*data = new byte[17];
