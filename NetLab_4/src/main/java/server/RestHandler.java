@@ -3,13 +3,29 @@ package server;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-
 import java.io.IOException;
+import java.net.URI;
 
 public class RestHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        System.out.println(exchange.getRequestMethod());
+        String method = exchange.getRequestMethod();        //POST
+
+        String path = exchange.getRequestURI().getPath();   //login etc.
+        if(method.equals("POST"))
+        {
+            if(path.equals("/login"))
+            {
+                System.out.println("login");
+                //TODO: parse body!
+            }
+            else if (path.equals("/logout"))
+            {
+                System.out.println("logout");
+            }
+        }
+
+        //System.out.println(exchange.getRequestHeaders());
     }
 }
 
