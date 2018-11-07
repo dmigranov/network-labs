@@ -1,6 +1,7 @@
 package server;
 
-import com.sun.net.httpserver.HttpServer;
+
+import io.undertow.Undertow;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -13,9 +14,11 @@ public class Server {
             System.exit(1);
         }
         int port = Integer.parseInt(args[0]);
-        HttpServer server = HttpServer.create();
-        server.bind(new InetSocketAddress(port), 0);
-        server.createContext("/", new RestHandler());
+        //HttpServer server = HttpServer.create();
+        Undertow server;
+        Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new RestHandler());
+
+        server = builder.build();
         server.start();
     }
 }

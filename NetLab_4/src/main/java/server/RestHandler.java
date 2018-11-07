@@ -1,14 +1,16 @@
 package server;
 
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
+import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.HttpString;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 public class RestHandler implements HttpHandler {
-    @Override
+    /*@Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();        //POST
         Headers reqHeaders = exchange.getRequestHeaders();
@@ -47,6 +49,17 @@ public class RestHandler implements HttpHandler {
             }
         }
         //System.out.println(exchange.getRequestHeaders());
+    }*/
+
+    @Override
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
+        HttpString method = exchange.getRequestMethod();        //POST
+        HeaderMap headers = exchange.getRequestHeaders();
+        String uri = exchange.getRequestURI();
+
+        System.out.println(method + " " + uri + " " + headers.size());
+
+
     }
 }
 
