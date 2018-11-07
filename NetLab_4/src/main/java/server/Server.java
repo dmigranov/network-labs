@@ -14,7 +14,6 @@ public class Server {
             System.exit(1);
         }
         int port = Integer.parseInt(args[0]);
-        //HttpServer server = HttpServer.create();
         Undertow server;
         Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new RestHandler());
 
