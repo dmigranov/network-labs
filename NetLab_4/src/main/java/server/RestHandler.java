@@ -5,6 +5,8 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HttpString;
+import org.xnio.channels.StreamSourceChannel;
+//import org.json.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +58,8 @@ public class RestHandler implements HttpHandler {
         String method = exchange.getRequestMethod().toString();        //POST
         HeaderMap headers = exchange.getRequestHeaders();
         String path = exchange.getRequestURI();
+        StreamSourceChannel body;
+        //body = exchange.getRequestChannel() //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
 
         System.out.println(method + " " + path + " " + headers.size());
 
@@ -64,7 +68,7 @@ public class RestHandler implements HttpHandler {
             if(path.equals("/login"))
             {
                 System.out.println("login");
-                //System.out.println(reqHeaders.get("Content-Type").get(0)); //TODO: проверка на json
+                System.out.println(headers.get("Content-Type").get(0)); //TODO: проверка на json
                 //TODO: parse body!
             }
             else if (path.equals("/logout"))
@@ -77,7 +81,7 @@ public class RestHandler implements HttpHandler {
             }
             else
             {
-                //exchange.sendResponseHeaders(400, -1);
+                exchange.setStatusCode(405);
             }
         }
         else if(method.equals("GET"))
@@ -97,7 +101,7 @@ public class RestHandler implements HttpHandler {
             }
             else
             {
-                //exchange.sendResponseHeaders(400, -1);
+                exchange.setStatusCode(405);
             }
         }
 
