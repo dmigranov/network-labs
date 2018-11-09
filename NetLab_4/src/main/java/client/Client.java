@@ -3,8 +3,6 @@ package client;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class Client {
@@ -25,7 +23,7 @@ public class Client {
             con.setRequestProperty("Content-Type", "application/json");
 
             OutputStream os = con.getOutputStream();
-            byte data[] = ("{ \"username\": \"Чувак\" }").getBytes("UTF-8");
+            byte data[] = ("{ \"username\": \"BigBatya\" }").getBytes("UTF-8");
             os.write(data);
 
             System.out.println(con.getResponseCode());

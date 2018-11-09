@@ -9,65 +9,43 @@ import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
-//import org.json.*;
+import org.json.JSONObject;
 import org.xnio.channels.StreamSourceChannel;
 import org.xnio.streams.ChannelInputStream;
-import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.*;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 
 public class RestHandler implements HttpHandler {
 
-    String body;
-
-    class UTF8Receiver implements Receiver.FullBytesCallback
-    {
-        @Override
-        public void handle(HttpServerExchange httpServerExchange, byte[] bytes) {
-            body = new String(bytes, StandardCharsets.UTF_8);
-        }
-    }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) //throws Exception
     {
-        /*if(exchange.isInIoThread())
+        if(exchange.isInIoThread())
         {
             exchange.dispatch(this);
             return;
         }
-        StreamSourceChannel bodyChannel = exchange.getRequestChannel();
-        ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
-        String body = new BufferedReader(new InputStreamReader(bodyStream)).lines().collect(Collectors.joining("\n"));*/ //this is blocking
+        JSONObject obj;
         String method = exchange.getRequestMethod().toString();
         HeaderMap headers = exchange.getRequestHeaders();
         String path = exchange.getRequestURI();
 
-        exchange.getRequestReceiver().receiveFullBytes(new UTF8Receiver());
+        StreamSourceChannel bodyChannel = exchange.getRequestChannel();
+        ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
+        String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //this is blocking
+
         System.out.println(body);
-        System.out.println("Headers");
+        /*System.out.println("Headers");
         for(HeaderValues h: headers)
         {
             System.out.println(h);
-        }
-        //System.out.println(body);
-
-        //String body = null;
-        /*try {
-            System.out.println("i'm here");
-            body = IOUtils.toString(bodyStream, "UTF8");
-        }
-        catch(IOException e)
-        {
-            //TODOclose stream?
-            exchange.setStatusCode(500);
         }*/
+        //System.out.println(body);
 
 
         if(method.equals("POST"))
@@ -76,8 +54,10 @@ public class RestHandler implements HttpHandler {
                 case "/login":
                     System.out.println("login");
                     if (headers.get("Content-Type") != null && headers.get("Content-Type").get(0).equals("application/json")) {
-                        System.out.println("JSON"); //TODO: проверка на json
+                        //System.out.println("JSON");
                         //TODO: parse body!
+                        obj = new JSONObject(body);
+                        System.out.println(obj.getString("username"));
 
                     }
                     else
