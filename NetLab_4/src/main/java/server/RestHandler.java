@@ -1,24 +1,24 @@
 package server;
 
-
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
-
 import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
-import org.json.JSONObject;
 import org.xnio.channels.StreamSourceChannel;
 import org.xnio.streams.ChannelInputStream;
+import org.json.JSONObject;
+import org.xnio.streams.ChannelOutputStream;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 
 public class RestHandler implements HttpHandler {
-
+    static List<User> users = new CopyOnWriteArrayList<>(); //может мапа с ключом типа String name и serdata, где id token online
 
     @Override
     public void handleRequest(HttpServerExchange exchange) //throws Exception
@@ -28,7 +28,7 @@ public class RestHandler implements HttpHandler {
             exchange.dispatch(this);
             return;
         }
-        JSONObject obj;
+        JSONObject reqObj;
         String method = exchange.getRequestMethod().toString();
         HeaderMap requestHeaders = exchange.getRequestHeaders();
         HeaderMap responseHeaders = exchange.getResponseHeaders();
@@ -38,6 +38,7 @@ public class RestHandler implements HttpHandler {
         ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
         String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //this is blocking
 
+        //ChannelOutputStream responseStream = new ChannelOutputStream(exchange.getResponseChannel());
         System.out.println(body);
 
         if(method.equals("POST"))
@@ -46,10 +47,26 @@ public class RestHandler implements HttpHandler {
                 case "/login":
                     System.out.println("login");
                     if (requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json")) {
-                        obj = new JSONObject(body);
-                        System.out.println(obj.getString("username"));
-                        //generate token
-                        responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
+                        reqObj = new JSONObject(body);
+                        //System.out.println(obj.getString("username"));
+                        String username = reqObj.getString("username");
+                        if(!containsName(username)) {
+                            responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
+                            User user = new User(username);
+                            users.add(user);
+                            JSONObject respObject = new JSONObject();
+                            respObject.put("id", user.getId());
+                            respObject.put("username", username);
+                            respObject.put("online", true);
+                            respObject.put("token", user.getToken());
+                            //now send the object
+                            //byte[] jsonBytes =
+                        }
+                        else
+                        {
+                            exchange.setStatusCode(401);
+                            responseHeaders.add(Headers.WWW_AUTHENTICATE, "Token realm = 'Username is already in use'");
+                        }
                     }
                     else
                         exchange.setStatusCode(400);
@@ -87,8 +104,15 @@ public class RestHandler implements HttpHandler {
                 System.out.println(405);
             }
         }
+    }
 
-
+    private boolean containsName(String username) {
+        for (User user : users)//synchro?
+        {
+            if (user.getUsername().equals(username))
+                return true;
+        }
+        return false;
     }
 }
 

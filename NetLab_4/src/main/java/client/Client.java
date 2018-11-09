@@ -1,28 +1,24 @@
 package client;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class Client {
-    long token;
+
     public static void main(String[] args) {
-        if(args.length < 1){ //на вход - URL
+        if(args.length < 2){ //на вход - URL и ник
             System.err.println("Not enough arguments");
             System.exit(1);
         }
 
+        String username = args[1];
 
-
-
-        HttpURLConnection con = null;
-        //на самом деле читать из cmd
-        //while ... read line ... в зависимости от линии url + "..." ;
-        try {
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
+        {
+            //login:
             URL url = new URL(args[0] + "/login");
-            con = (HttpURLConnection)url.openConnection();
+            HttpURLConnection con = (HttpURLConnection)url.openConnection();
             con.setDoOutput(true);
 
             con.setRequestMethod("POST");
@@ -30,22 +26,29 @@ public class Client {
             con.setRequestProperty("Content-Type", "application/json");
 
             OutputStream os = con.getOutputStream();
-            InputStream is = con.getInputStream();
-            byte data[] = ("{ \"username\": \"BigBatya\" }").getBytes("UTF-8");
+
+            byte data[] = ("{ \"username\": \"" + username +" \" }").getBytes("UTF-8"); //maybe build json with a special method
             os.write(data);
 
+            //InputStream is = con.getInputStream();
             System.out.println(con.getResponseCode());
             System.out.println(con.getHeaderField("Content-Type"));
+            System.out.println(con.getHeaderField("WWW-Authenticate")); //TODO: сделать все необходимые проверки
+            //получить тело
 
-            //con.getRe
 
+            String str;
+            while((str = br.readLine()) != null)
+            {
+                //con = null;
+                //while ... read line ... в зависимости от линии url + "..." ;
+                //con.getRe
+            }
         }
         catch(IOException e)
         {
-            System.err.println("Can't open connection: " + e.getMessage()); //
-            System.exit(2);
+            e.printStackTrace();
+            System.exit(5);
         }
-
-
     }
 }
