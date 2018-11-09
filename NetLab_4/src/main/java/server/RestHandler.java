@@ -1,12 +1,15 @@
 package server;
 
 
+import io.undertow.io.Receiver;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
 //import org.json.*;
+import org.xnio.channels.StreamSourceChannel;
 import org.xnio.streams.ChannelInputStream;
 import org.apache.commons.io.IOUtils;
 
@@ -19,13 +22,28 @@ public class RestHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) //throws Exception
     {
+        if(exchange.isInIoThread())
+        {
+            exchange.dispatch(this);
+            return;
+        }
         String method = exchange.getRequestMethod().toString();        //POST
         HeaderMap headers = exchange.getRequestHeaders();
         String path = exchange.getRequestURI();
-        ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel()); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
+        //StreamSourceChannel bodyChannel = exchange.getRequestChannel();
+        //ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
         //String body = new BufferedReader(new InputStreamReader(bodyStream)).lines().collect(Collectors.joining("\n"));
-        String body = null;
-        try {
+        byte[] bodyData;
+        exchange.getRequestReceiver().receiveFullString(new Receiver.FullStringCallback() {
+            @Override
+            public void handle(HttpServerExchange httpServerExchange, String s) {
+                System.out.println("BODY: " + s);
+                //exchange.getResponseSender().send("");
+                exchange.getResponseHeaders().add(Headers.HOST, "localhost");
+            }
+        }); //charset!!!
+        //String body = null;
+        /*try {
             System.out.println("i'm here");
             body = IOUtils.toString(bodyStream, "UTF8");
         }
@@ -33,8 +51,8 @@ public class RestHandler implements HttpHandler {
         {
             //TODOclose stream?
             exchange.setStatusCode(500);
-        }
-        System.out.println(body);
+        }*/
+
 
         if(method.equals("POST"))
         {
