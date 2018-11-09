@@ -13,9 +13,12 @@ import org.xnio.channels.StreamSourceChannel;
 import org.xnio.streams.ChannelInputStream;
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.*;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 
 public class RestHandler implements HttpHandler {
@@ -30,18 +33,11 @@ public class RestHandler implements HttpHandler {
         String method = exchange.getRequestMethod().toString();        //POST
         HeaderMap headers = exchange.getRequestHeaders();
         String path = exchange.getRequestURI();
-        //StreamSourceChannel bodyChannel = exchange.getRequestChannel();
-        //ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
-        //String body = new BufferedReader(new InputStreamReader(bodyStream)).lines().collect(Collectors.joining("\n"));
-        byte[] bodyData;
-        exchange.getRequestReceiver().receiveFullString(new Receiver.FullStringCallback() {
-            @Override
-            public void handle(HttpServerExchange httpServerExchange, String s) {
-                System.out.println("BODY: " + s);
-                //exchange.getResponseSender().send("");
-                exchange.getResponseHeaders().add(Headers.HOST, "localhost");
-            }
-        }); //charset!!!
+        StreamSourceChannel bodyChannel = exchange.getRequestChannel();
+        ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
+        String body = new BufferedReader(new InputStreamReader(bodyStream)).lines().collect(Collectors.joining("\n"));
+        System.out.println(body);
+
         //String body = null;
         /*try {
             System.out.println("i'm here");
