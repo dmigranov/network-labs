@@ -1,14 +1,12 @@
 package server;
 
 
-import io.undertow.io.Receiver;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
-import io.undertow.util.HeaderValues;
+
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
-
 import org.json.JSONObject;
 import org.xnio.channels.StreamSourceChannel;
 import org.xnio.streams.ChannelInputStream;
@@ -32,7 +30,8 @@ public class RestHandler implements HttpHandler {
         }
         JSONObject obj;
         String method = exchange.getRequestMethod().toString();
-        HeaderMap headers = exchange.getRequestHeaders();
+        HeaderMap requestHeaders = exchange.getRequestHeaders();
+        HeaderMap responseHeaders = exchange.getResponseHeaders();
         String path = exchange.getRequestURI();
 
         StreamSourceChannel bodyChannel = exchange.getRequestChannel();
@@ -40,25 +39,17 @@ public class RestHandler implements HttpHandler {
         String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //this is blocking
 
         System.out.println(body);
-        /*System.out.println("Headers");
-        for(HeaderValues h: headers)
-        {
-            System.out.println(h);
-        }*/
-        //System.out.println(body);
-
 
         if(method.equals("POST"))
         {
             switch (path) {
                 case "/login":
                     System.out.println("login");
-                    if (headers.get("Content-Type") != null && headers.get("Content-Type").get(0).equals("application/json")) {
-                        //System.out.println("JSON");
-                        //TODO: parse body!
+                    if (requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json")) {
                         obj = new JSONObject(body);
                         System.out.println(obj.getString("username"));
-
+                        //generate token
+                        responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                     }
                     else
                         exchange.setStatusCode(400);
@@ -79,7 +70,7 @@ public class RestHandler implements HttpHandler {
         {
             if (path.equals("/users"))
             {
-                System.out.println("get users"); //TODO: проверка на json
+                System.out.println("get users");
                 //TODO: parse body!
             }
             else if (path.matches("/users/(.+)"))

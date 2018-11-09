@@ -1,18 +1,25 @@
 package client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class Client {
+    long token;
     public static void main(String[] args) {
         if(args.length < 1){ //на вход - URL
             System.err.println("Not enough arguments");
             System.exit(1);
         }
+
+
+
+
         HttpURLConnection con = null;
         //на самом деле читать из cmd
+        //while ... read line ... в зависимости от линии url + "..." ;
         try {
             URL url = new URL(args[0] + "/login");
             con = (HttpURLConnection)url.openConnection();
@@ -23,10 +30,13 @@ public class Client {
             con.setRequestProperty("Content-Type", "application/json");
 
             OutputStream os = con.getOutputStream();
+            InputStream is = con.getInputStream();
             byte data[] = ("{ \"username\": \"BigBatya\" }").getBytes("UTF-8");
             os.write(data);
 
             System.out.println(con.getResponseCode());
+            System.out.println(con.getHeaderField("Content-Type"));
+
             //con.getRe
 
         }
