@@ -5,6 +5,7 @@ import io.undertow.io.Receiver;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
+import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
@@ -36,6 +37,11 @@ public class RestHandler implements HttpHandler {
         StreamSourceChannel bodyChannel = exchange.getRequestChannel();
         ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
         String body = new BufferedReader(new InputStreamReader(bodyStream)).lines().collect(Collectors.joining("\n"));
+        System.out.println("Headers");
+        for(HeaderValues h: headers)
+        {
+            System.out.println(h);
+        }
         System.out.println(body);
 
         //String body = null;
@@ -71,6 +77,7 @@ public class RestHandler implements HttpHandler {
                     break;
                 default:
                     exchange.setStatusCode(405);
+                    System.out.println(405);
                     break;
             }
         }
@@ -92,6 +99,7 @@ public class RestHandler implements HttpHandler {
             else
             {
                 exchange.setStatusCode(405);
+                System.out.println(405);
             }
         }
 
