@@ -23,6 +23,17 @@ import java.util.stream.Collectors;
 
 
 public class RestHandler implements HttpHandler {
+
+    String body;
+
+    class UTF8Receiver implements Receiver.FullBytesCallback
+    {
+        @Override
+        public void handle(HttpServerExchange httpServerExchange, byte[] bytes) {
+            body = new String(bytes, StandardCharsets.UTF_8);
+        }
+    }
+
     @Override
     public void handleRequest(HttpServerExchange exchange) //throws Exception
     {
@@ -30,23 +41,16 @@ public class RestHandler implements HttpHandler {
         {
             exchange.dispatch(this);
             return;
-        }*/
-        String method = exchange.getRequestMethod().toString();        //POST
+        }
+        StreamSourceChannel bodyChannel = exchange.getRequestChannel();
+        ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
+        String body = new BufferedReader(new InputStreamReader(bodyStream)).lines().collect(Collectors.joining("\n"));*/ //this is blocking
+        String method = exchange.getRequestMethod().toString();
         HeaderMap headers = exchange.getRequestHeaders();
         String path = exchange.getRequestURI();
-        /*StreamSourceChannel bodyChannel = exchange.getRequestChannel();
-        ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
-        String body = new BufferedReader(new InputStreamReader(bodyStream)).lines().collect(Collectors.joining("\n"));*/
-        /*final String body;
-        exchange.getRequestReceiver().receiveFullBytes(new Receiver.FullBytesCallback() {
-            @Override
-            public void handle(HttpServerExchange httpServerExchange, byte[] bytes) {
-                System.out.println("BODY: " + new String(bytes, StandardCharsets.UTF_8));
-                //exchange.get
-                body = new String(bytes, StandardCharsets.UTF_8);
-            }
-        }); //this is no very good: can't access body cause it's outer
 
+        exchange.getRequestReceiver().receiveFullBytes(new UTF8Receiver());
+        System.out.println(body);
         System.out.println("Headers");
         for(HeaderValues h: headers)
         {
