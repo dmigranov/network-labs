@@ -26,23 +26,33 @@ public class RestHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) //throws Exception
     {
-        if(exchange.isInIoThread())
+        /*if(exchange.isInIoThread())
         {
             exchange.dispatch(this);
             return;
-        }
+        }*/
         String method = exchange.getRequestMethod().toString();        //POST
         HeaderMap headers = exchange.getRequestHeaders();
         String path = exchange.getRequestURI();
-        StreamSourceChannel bodyChannel = exchange.getRequestChannel();
+        /*StreamSourceChannel bodyChannel = exchange.getRequestChannel();
         ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
-        String body = new BufferedReader(new InputStreamReader(bodyStream)).lines().collect(Collectors.joining("\n"));
+        String body = new BufferedReader(new InputStreamReader(bodyStream)).lines().collect(Collectors.joining("\n"));*/
+        /*final String body;
+        exchange.getRequestReceiver().receiveFullBytes(new Receiver.FullBytesCallback() {
+            @Override
+            public void handle(HttpServerExchange httpServerExchange, byte[] bytes) {
+                System.out.println("BODY: " + new String(bytes, StandardCharsets.UTF_8));
+                //exchange.get
+                body = new String(bytes, StandardCharsets.UTF_8);
+            }
+        }); //this is no very good: can't access body cause it's outer
+
         System.out.println("Headers");
         for(HeaderValues h: headers)
         {
             System.out.println(h);
         }
-        System.out.println(body);
+        //System.out.println(body);
 
         //String body = null;
         /*try {
