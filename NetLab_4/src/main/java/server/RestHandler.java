@@ -54,7 +54,7 @@ public class RestHandler implements HttpHandler {
                                 respObject.put("username", username);
                                 respObject.put("online", true);
                                 respObject.put("token", user.getToken());
-                                System.out.println(user.getToken());
+                                System.out.println(user.getToken()); //удоли
                                 byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
@@ -73,7 +73,6 @@ public class RestHandler implements HttpHandler {
                         HeaderValues authorizationHeader;
                         if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                         {
-                            //System.out.println(authorizataionHeader.get(0).substring(6));
                             if (deleteUserWithToken(authorizationHeader.get(0).substring(6)))
                             {
                                 JSONObject respObject = new JSONObject();

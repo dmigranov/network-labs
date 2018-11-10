@@ -42,10 +42,8 @@ public class Client {
             os.close();
             is.close();
             con.disconnect();
-            //get messages
+            //TODO: get messages; запустить MessageRefresher?
             System.out.println("Connected with username " + username);
-
-
 
             String str;
             while((str = br.readLine()) != null)
@@ -71,7 +69,6 @@ public class Client {
                         con.setRequestProperty("Host", "localhost");
                         is = con.getInputStream();
                     }
-
                     else
                     {
                         System.out.println("No such command");
@@ -93,10 +90,8 @@ public class Client {
                     data = new JSONObject().put("message", str).toString().getBytes(StandardCharsets.UTF_8);
                     os.write(data);
 
-                    //System.out.println(con.getResponseCode());
                     is = con.getInputStream();
-                    System.out.println(new JSONObject(getStringFromStream(is)).get("id"));
-                    //ответ получен
+                    System.out.println(new JSONObject(getStringFromStream(is)).get("id")); //а что выводить? надо ли?
 
                 }
             }
