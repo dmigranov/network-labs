@@ -47,9 +47,6 @@ public class Client {
             String str;
             while((str = br.readLine()) != null)
             {
-
-
-                //con.getRe
                 if(str.charAt(0) == '/')
                 {
                     if (str.equals("/logout"))
@@ -58,11 +55,23 @@ public class Client {
                         con = (HttpURLConnection)url.openConnection();
                         con.setRequestMethod("POST");
                         con.setRequestProperty("Host", "localhost");
-                        //con.setRequestProperty("Authorization", "Token " + token);
                         con.setRequestProperty("Authorization", "Token " + token);
                         is = con.getInputStream();
                         System.out.println(new JSONObject(getStringFromStream(is)).get("message"));
                         System.exit(0);
+                    }
+                    else if(str.equals("/list")) {
+                        url = new URL(args[0] + "/users");
+                        con = (HttpURLConnection)url.openConnection();
+                        con.setRequestMethod("GET");
+                        con.setRequestProperty("Authorization", "Token " + token);
+                        is = con.getInputStream();
+                    }
+
+                    else
+                    {
+                        System.out.println("No such command");
+                        break;
                     }
                 }
                 else
