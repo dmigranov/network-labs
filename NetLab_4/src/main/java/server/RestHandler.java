@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 
 public class RestHandler implements HttpHandler {
-    static List<User> users = new CopyOnWriteArrayList<>(); //может мапа с ключом типа String name и serdata, где id token online
+    static List<User> users = new CopyOnWriteArrayList<>();
 
     @Override
     public void handleRequest(HttpServerExchange exchange) {
@@ -31,15 +31,8 @@ public class RestHandler implements HttpHandler {
         HeaderMap requestHeaders = exchange.getRequestHeaders();
         HeaderMap responseHeaders = exchange.getResponseHeaders();
         String path = exchange.getRequestURI();
+        ChannelOutputStream responseStream;
 
-        /*StreamSourceChannel bodyChannel = exchange.getRequestChannel();
-        ChannelInputStream bodyStream = new ChannelInputStream(bodyChannel); //if there is no req body, calling this method may cause the next req to be processed. NB: close()!
-        String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //this is blocking
-
-        ChannelOutputStream responseStream = new ChannelOutputStream(exchange.getResponseChannel());*/
-
-        ;
-        ChannelOutputStream responseStream; //now they're not closed
         try (ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel()))
         {
             String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));

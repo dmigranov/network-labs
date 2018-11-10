@@ -20,20 +20,15 @@ public class Client {
 
         try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
         {
-            //login:
             URL url = new URL(args[0] + "/login");
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
             con.setDoOutput(true);
-
             con.setRequestMethod("POST");
             con.setRequestProperty("Host", "localhost");
             con.setRequestProperty("Content-Type", "application/json");
-
             OutputStream os = con.getOutputStream();
-
             byte data[] = ("{ \"username\": \"" + username +" \" }").getBytes("UTF-8"); //maybe build json with a special method
             os.write(data);
-
             System.out.println(con.getResponseCode());
             if(con.getHeaderField("WWW-Authenticate") != null) {
                 System.out.println(con.getHeaderField("WWW-Authenticate"));
