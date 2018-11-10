@@ -1,18 +1,20 @@
 package server;
 
+import java.util.UUID;
+
 public class User {
     private static int counter = 0;
     private int id;
     private String username;
     //private boolean online; //мож потом понадобится
-    private long token;
+    private String token;
 
     public User(String username)
     {
         this.username = username;
         id = counter++;
         //online = true;
-        token = 2345; //TODO: исправить на нормально генерируемый токен!
+        token = UUID.randomUUID().toString(); //TODO: исправить на нормально генерируемый токен!
     }
     
     public String getUsername() {
@@ -24,7 +26,7 @@ public class User {
         return id;
     }
 
-    public long getToken() {
+    public String getToken() {
         return token;
     }
 }

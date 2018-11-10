@@ -3,6 +3,9 @@ package client;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
+import org.json.JSONObject;
 
 public class Client {
 
@@ -13,6 +16,7 @@ public class Client {
         }
 
         String username = args[1];
+        String token;
 
         try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
         {
@@ -30,11 +34,16 @@ public class Client {
             byte data[] = ("{ \"username\": \"" + username +" \" }").getBytes("UTF-8"); //maybe build json with a special method
             os.write(data);
 
-            //InputStream is = con.getInputStream();
             System.out.println(con.getResponseCode());
-            System.out.println(con.getHeaderField("Content-Type"));
-            System.out.println(con.getHeaderField("WWW-Authenticate")); //TODO: сделать все необходимые проверки
-            //получить тело
+            if(con.getHeaderField("WWW-Authenticate") != null) {
+                System.out.println(con.getHeaderField("WWW-Authenticate"));
+                System.exit(2);
+            }
+            InputStream is = con.getInputStream();
+            String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
+            JSONObject loginInfo = new JSONObject(body);
+            token = loginInfo.getString("token");
+            System.out.println(token);
 
 
             String str;
