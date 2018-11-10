@@ -59,6 +59,7 @@ public class RestHandler implements HttpHandler {
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
                                 responseStream.close();
+                                //TODO: добавить системное сообщение  о логине
                             }
                             else {
                                 exchange.setStatusCode(401);
@@ -81,13 +82,27 @@ public class RestHandler implements HttpHandler {
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
                                 responseStream.close();
+                                //TODO: добавить системное сообщение  о логауте
                             }
                         }
                         else
                             exchange.setStatusCode(400);
                         break;
                     case "/messages":
-                        //add a message
+                        if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null && requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json"))
+                        {
+                            String token = authorizationHeader.get(0).substring(6);
+                            reqObj = new JSONObject(body);
+                            String messageText = reqObj.getString("message");
+                            Message message = new Message(messageText, findUser(token));
+                            messages.add(message);
+                            byte[] jsonBytes = new JSONObject().put("id", message.getId()).put("message", messageText).toString().getBytes(StandardCharsets.UTF_8);
+                            responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                            responseStream.write(jsonBytes);
+                            responseStream.close();
+                        }
+                        else
+                            exchange.setStatusCode(400);
                         break;
                     default:
                         exchange.setStatusCode(405);
@@ -114,6 +129,16 @@ public class RestHandler implements HttpHandler {
             exchange.setStatusCode(500);
         }
     }
+
+    private String findUser(String token) {
+        for (User user : users)//synchro?
+        {
+            if (user.getToken().equals(token))
+                return user.getUsername();
+        }
+        return null;
+    }
+
 
     private boolean containsName(String username) {
         for (User user : users)//synchro?

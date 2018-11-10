@@ -42,7 +42,10 @@ public class Client {
             os.close();
             is.close();
             con.disconnect();
+            //get messages
             System.out.println("Connected with username " + username);
+
+
 
             String str;
             while((str = br.readLine()) != null)
@@ -90,8 +93,10 @@ public class Client {
                     data = new JSONObject().put("message", str).toString().getBytes(StandardCharsets.UTF_8);
                     os.write(data);
 
-                    System.out.println(con.getResponseCode());
-                    //ответ получить
+                    //System.out.println(con.getResponseCode());
+                    is = con.getInputStream();
+                    System.out.println(new JSONObject(getStringFromStream(is)).get("id"));
+                    //ответ получен
 
                 }
             }
@@ -106,6 +111,5 @@ public class Client {
     static private String getStringFromStream(InputStream is)
     {
         return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
-
     }
 }
