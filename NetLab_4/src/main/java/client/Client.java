@@ -65,6 +65,7 @@ public class Client {
                         con = (HttpURLConnection)url.openConnection();
                         con.setRequestMethod("GET");
                         con.setRequestProperty("Authorization", "Token " + token);
+                        con.setRequestProperty("Host", "localhost");
                         is = con.getInputStream();
                     }
 
@@ -76,7 +77,22 @@ public class Client {
                 }
                 else
                 {
-                    //POST message
+                    //post a message
+                    url = new URL(args[0] + "/messages");
+                    con = (HttpURLConnection)url.openConnection();
+                    con.setRequestMethod("POST");
+                    con.setRequestProperty("Authorization", "Token " + token);
+                    con.setRequestProperty("Host", "localhost");
+                    con.setRequestProperty("Content-Type", "application/json");
+                    con.setDoOutput(true);
+
+                    os = con.getOutputStream();
+                    data = new JSONObject().put("message", str).toString().getBytes(StandardCharsets.UTF_8);
+                    os.write(data);
+
+                    System.out.println(con.getResponseCode());
+                    //ответ получить
+
                 }
             }
         }
@@ -87,7 +103,7 @@ public class Client {
         }
     }
 
-    static String getStringFromStream(InputStream is)
+    static private String getStringFromStream(InputStream is)
     {
         return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
 

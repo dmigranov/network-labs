@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 
 
 public class RestHandler implements HttpHandler {
-    static List<User> users = new CopyOnWriteArrayList<>();
+    static private List<User> users = new CopyOnWriteArrayList<>();
+    static private List<Message> messages = new CopyOnWriteArrayList<>();
 
     @Override
     public void handleRequest(HttpServerExchange exchange) {
@@ -72,7 +73,7 @@ public class RestHandler implements HttpHandler {
                         if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                         {
                             //System.out.println(authorizataionHeader.get(0).substring(6));
-                            if (deleteUserWithToken(authorizationHeader.get(0).substring(6)) == true)
+                            if (deleteUserWithToken(authorizationHeader.get(0).substring(6)))
                             {
                                 JSONObject respObject = new JSONObject();
                                 respObject.put("message", "bye!");
@@ -86,7 +87,7 @@ public class RestHandler implements HttpHandler {
                             exchange.setStatusCode(400);
                         break;
                     case "/messages":
-                        System.out.println("messages");
+                        //add a message
                         break;
                     default:
                         exchange.setStatusCode(405);
