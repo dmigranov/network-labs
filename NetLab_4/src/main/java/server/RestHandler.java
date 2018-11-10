@@ -3,6 +3,7 @@ package server;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
+import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import org.xnio.streams.ChannelInputStream;
 import org.json.JSONObject;
@@ -44,7 +45,6 @@ public class RestHandler implements HttpHandler {
                             reqObj = new JSONObject(body);
                             String username = reqObj.getString("username");
                             if (!containsName(username)) {
-                                responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                                 User user = new User(username);
                                 users.add(user);
@@ -55,6 +55,7 @@ public class RestHandler implements HttpHandler {
                                 respObject.put("token", user.getToken());
                                 System.out.println(user.getToken());
                                 byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
+                                responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
                                 responseStream.close();
                             }
@@ -67,7 +68,22 @@ public class RestHandler implements HttpHandler {
                             exchange.setStatusCode(400);
                         break;
                     case "/logout":
-                        System.out.println("logout");
+                        HeaderValues authorizationHeader;
+                        if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
+                        {
+                            //System.out.println(authorizataionHeader.get(0).substring(6));
+                            if (deleteUserWithToken(authorizationHeader.get(0).substring(6)) == true)
+                            {
+                                JSONObject respObject = new JSONObject();
+                                respObject.put("message", "bye!");
+                                byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
+                                responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                                responseStream.write(jsonBytes);
+                                responseStream.close();
+                            }
+                        }
+                        else
+                            exchange.setStatusCode(400);
                         break;
                     case "/messages":
                         System.out.println("messages");
@@ -103,6 +119,18 @@ public class RestHandler implements HttpHandler {
         {
             if (user.getUsername().equals(username))
                 return true;
+        }
+        return false;
+    }
+
+    private boolean deleteUserWithToken(String token)
+    {
+        for (User user : users)//synchro?
+        {
+            if (user.getToken().equals(token)) {
+                users.remove(user);
+                return true;
+            }
         }
         return false;
     }

@@ -17,6 +17,7 @@ public class Client {
 
         String username = args[1];
         String token;
+        //Runtime.getRuntime().addShutdownHook(); //on exit - logout?
 
         try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
         {
@@ -27,9 +28,9 @@ public class Client {
             con.setRequestProperty("Host", "localhost");
             con.setRequestProperty("Content-Type", "application/json");
             OutputStream os = con.getOutputStream();
-            byte data[] = ("{ \"username\": \"" + username +" \" }").getBytes("UTF-8"); //maybe build json with a special method
+            byte data[] = new JSONObject().put("username", username).toString().getBytes(StandardCharsets.UTF_8);
             os.write(data);
-            System.out.println(con.getResponseCode());
+            //System.out.println(con.getResponseCode());
             if(con.getHeaderField("WWW-Authenticate") != null) {
                 System.out.println(con.getHeaderField("WWW-Authenticate"));
                 System.exit(2);
@@ -38,18 +39,31 @@ public class Client {
             String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
             JSONObject loginInfo = new JSONObject(body);
             token = loginInfo.getString("token");
-            con.disconnect(); //is it necessary?
+            os.close();
+            is.close();
+            con.disconnect();
             System.out.println("Connected with username " + username);
 
             String str;
             while((str = br.readLine()) != null)
             {
-                con = (HttpURLConnection)url.openConnection();
+
+
                 //con.getRe
                 if(str.charAt(0) == '/')
                 {
-                    //служебное сообщение
-                    //if...
+                    if (str.equals("/logout"))
+                    {
+                        url = new URL(args[0] + "/logout");
+                        con = (HttpURLConnection)url.openConnection();
+                        con.setRequestMethod("POST");
+                        con.setRequestProperty("Host", "localhost");
+                        //con.setRequestProperty("Authorization", "Token " + token);
+                        con.setRequestProperty("Authorization", "Token " + token);
+                        is = con.getInputStream();
+                        System.out.println(new JSONObject(getStringFromStream(is)).get("message"));
+                        System.exit(0);
+                    }
                 }
                 else
                 {
@@ -62,5 +76,11 @@ public class Client {
             e.printStackTrace();
             System.exit(5);
         }
+    }
+
+    static String getStringFromStream(InputStream is)
+    {
+        return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
+
     }
 }
