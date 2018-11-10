@@ -38,15 +38,23 @@ public class Client {
             String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
             JSONObject loginInfo = new JSONObject(body);
             token = loginInfo.getString("token");
-            System.out.println(token);
-
+            con.disconnect(); //is it necessary?
+            System.out.println("Connected with username " + username);
 
             String str;
             while((str = br.readLine()) != null)
             {
-                //con = null;
-                //while ... read line ... в зависимости от линии url + "..." ;
+                con = (HttpURLConnection)url.openConnection();
                 //con.getRe
+                if(str.charAt(0) == '/')
+                {
+                    //служебное сообщение
+                    //if...
+                }
+                else
+                {
+                    //POST message
+                }
             }
         }
         catch(IOException e)
