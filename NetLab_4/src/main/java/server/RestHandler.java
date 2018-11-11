@@ -5,6 +5,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
+import org.json.JSONArray;
 import org.xnio.streams.ChannelInputStream;
 import org.json.JSONObject;
 import org.xnio.streams.ChannelOutputStream;
@@ -32,7 +33,8 @@ public class RestHandler implements HttpHandler {
         String method = exchange.getRequestMethod().toString();
         HeaderMap requestHeaders = exchange.getRequestHeaders();
         HeaderMap responseHeaders = exchange.getResponseHeaders();
-        String path = exchange.getRequestURI();
+        //String path = exchange.getRequestURI();
+        String path = exchange.getRequestPath();
         ChannelOutputStream responseStream;
 
         try (ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel()))
@@ -108,7 +110,10 @@ public class RestHandler implements HttpHandler {
                         System.out.println(405);
                         break;
                 }
-            } else if (method.equals("GET")) {
+            }
+
+            else if (method.equals("GET"))
+            {
                 if (path.equals("/users"))
                 {
                     System.out.println("get users");
@@ -118,11 +123,20 @@ public class RestHandler implements HttpHandler {
                 {
                     System.out.println(path);
                 }
-                else if (path.matches("/messages+")) //do i need to specify parameters here?
+                else if (path.equals("/messages"))
                 {
-                    exchange.getQueryParameters();//параметры
-                    System.out.println("count " + exchange.getQueryParameters().get("count").getFirst());
-                    System.out.println("offset " + exchange.getQueryParameters().get("offset").getFirst());
+                    int count = Integer.parseInt(exchange.getQueryParameters().get("count").getFirst());
+                    int offset = Integer.parseInt(exchange.getQueryParameters().get("offset").getFirst());
+                    List<Message> messageSublist = offset + count <= messages.size() ? messages.subList(offset, offset + count) : messages.subList(offset, messages.size());
+                    JSONObject respObj = new JSONObject();
+                    JSONArray respArr = new JSONArray();
+                    for (Message msg : messageSublist)
+                    {
+                        respArr.put(new JSONObject().put("id", msg.getId()).put("message", msg.getMessage()).put("author", msg.getAuthorID()));
+                    }
+                    respObj.put("messages", respArr);
+                    System.out.println(respObj);
+
                 }
                 else
                 {
@@ -137,13 +151,13 @@ public class RestHandler implements HttpHandler {
         }
     }
 
-    private String findUser(String token) {
+    private int findUser(String token) {
         for (User user : users)//synchro?
         {
             if (user.getToken().equals(token))
-                return user.getUsername();
+                return user.getId();
         }
-        return null;
+        return -1;
     }
 
 

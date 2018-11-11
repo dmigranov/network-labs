@@ -6,14 +6,14 @@ public class Message {
     private static int counter = 0;
     private int id;
     private String message;
-    private String author; //i guess a ref to User won't be optimal
+    private int authorID; //i guess a ref to User won't be optimal
     private boolean isSystem;
 
 
-    public Message(String message, String username)
+    public Message(String message, int authorID)
     {
         this.message = message;
-        this.author = username;
+        this.authorID = authorID;
         id = counter++;
         isSystem = false;
     }
@@ -21,12 +21,20 @@ public class Message {
     public Message(String message)
     {
         this.message = message;
-        this.author = "root";
+        this.authorID = -1;
         id = counter++;
         isSystem = true;
     }
 
     public int getId() {
         return id;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public int getAuthorID() {
+        return authorID;
     }
 }
