@@ -38,11 +38,12 @@ public class Client {
             String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
             JSONObject loginInfo = new JSONObject(body);
             token = loginInfo.getString("token");
+            int uid = loginInfo.getInt("id");
             os.close();
             is.close();
             con.disconnect();
 
-            new Thread(new MessageRefresher(args[0], token)).start();
+            new Thread(new MessageRefresher(args[0], token, uid)).start();
 
             System.out.println("Connected with username " + username);
 
@@ -92,7 +93,8 @@ public class Client {
                     os.write(data);
 
                     is = con.getInputStream();
-                    System.out.println(new JSONObject(getStringFromStream(is)).get("id")); //а что выводить? надо ли?
+                    new JSONObject(getStringFromStream(is)).get("id"); //а что выводить? надо ли?
+                    is.close();
 
                 }
             }

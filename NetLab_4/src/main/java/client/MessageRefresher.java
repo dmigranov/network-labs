@@ -18,12 +18,14 @@ public class MessageRefresher implements Runnable {
     //URL url;
     private String serverAddress;
     private String token;
+    private int uid;
 
 
-    MessageRefresher(String serverAddress, String token)
+    MessageRefresher(String serverAddress, String token, int uid)
     {
         this.serverAddress = serverAddress;
         this.token = token;
+        this.uid = uid;
     }
 
 
@@ -36,6 +38,7 @@ public class MessageRefresher implements Runnable {
             }
             catch(InterruptedException e) {}
             try {
+                int messagesAccepted = 0;
                 URL url = new URL(serverAddress + "/messages?offset=" + currentMessageID + "&count=25"); //не забывать считать скольк на самом деле!
                 HttpURLConnection con = (HttpURLConnection)url.openConnection();
                 con.setRequestMethod("GET");
@@ -44,14 +47,19 @@ public class MessageRefresher implements Runnable {
 
                 InputStream is = con.getInputStream();
                 String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
-                //System.out.println(body);
-                //прибавить кол-во сообщений к cmID!
                 JSONArray messages = new JSONObject(body).getJSONArray("messages");
                 for (int i = 0; i < messages.length(); i++)
                 {
-                    System.out.print(messages.get(i));
+                    //TODO: не печатат свои сообщения (проверка на ID)
+                    JSONObject msg = (JSONObject)messages.get(i);
+                    int messageUid = msg.getInt("author");
+                    if(messageUid != uid)
+                    {
+                        System.out.println(messageUid +": " + msg.getString("message"));
+                    }
+                    messagesAccepted++;
                 }
-
+                currentMessageID += messagesAccepted;
                 is.close();
             }
             catch(IOException e) {}
