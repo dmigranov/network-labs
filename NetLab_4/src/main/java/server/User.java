@@ -14,7 +14,7 @@ public class User {
         this.username = username;
         id = counter++;
         //online = true;
-        token = UUID.randomUUID().toString(); //TODO: исправить на нормально генерируемый токен!
+        token = UUID.randomUUID().toString();
     }
     
     public String getUsername() {

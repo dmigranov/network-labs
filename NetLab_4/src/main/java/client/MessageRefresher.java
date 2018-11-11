@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 public class MessageRefresher implements Runnable {
     private int currentMessageID = 0;
     private static final int count = 25;
-    //URL url;
     private String serverAddress;
     private String token;
     private int uid;
@@ -27,7 +26,6 @@ public class MessageRefresher implements Runnable {
         this.token = token;
         this.uid = uid;
     }
-
 
     @Override
     public void run()  {
@@ -50,11 +48,11 @@ public class MessageRefresher implements Runnable {
                 JSONArray messages = new JSONObject(body).getJSONArray("messages");
                 for (int i = 0; i < messages.length(); i++)
                 {
-                    //TODO: не печатат свои сообщения (проверка на ID)
                     JSONObject msg = (JSONObject)messages.get(i);
                     int messageUid = msg.getInt("author");
                     if(messageUid != uid)
                     {
+                        //TODO: выводить имя, а не ID! если есть в Users id, то выводить никнейм сразу, иначе - по методу обратиться к серверу и добавить в список
                         System.out.println(messageUid +": " + msg.getString("message"));
                     }
                     messagesAccepted++;
