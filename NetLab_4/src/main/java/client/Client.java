@@ -1,11 +1,12 @@
 package client;
 
+import org.json.JSONObject;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
-import org.json.JSONObject;
 
 public class Client {
 
@@ -40,7 +41,9 @@ public class Client {
             os.close();
             is.close();
             con.disconnect();
-            //TODO: get messages; запустить MessageRefresher?
+
+            new Thread(new MessageRefresher(args[0], token)).start();
+
             System.out.println("Connected with username " + username);
 
             String str;
@@ -69,7 +72,7 @@ public class Client {
                     }
                     else
                     {
-                        System.out.println("No such command");
+                        System.err.println("No such command");
                         break;
                     }
                 }

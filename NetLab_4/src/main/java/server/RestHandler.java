@@ -6,8 +6,8 @@ import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import org.json.JSONArray;
-import org.xnio.streams.ChannelInputStream;
 import org.json.JSONObject;
+import org.xnio.streams.ChannelInputStream;
 import org.xnio.streams.ChannelOutputStream;
 
 import java.io.BufferedReader;
@@ -77,6 +77,7 @@ public class RestHandler implements HttpHandler {
                         {
                             if (deleteUserWithToken(authorizationHeader.get(0).substring(6)))
                             {
+                                responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                                 JSONObject respObject = new JSONObject();
                                 respObject.put("message", "bye!");
                                 byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
@@ -92,10 +93,17 @@ public class RestHandler implements HttpHandler {
                     case "/messages":
                         if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null && requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json"))
                         {
+                            responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                             String token = authorizationHeader.get(0).substring(6);
                             reqObj = new JSONObject(body);
                             String messageText = reqObj.getString("message");
-                            Message message = new Message(messageText, findUser(token));
+                            int uid = findUser(token);
+                            if(uid == -1)
+                            {
+                                exchange.setStatusCode(403); //токен неизвестен  серверу
+                                break;
+                            }
+                            Message message = new Message(messageText, uid);
                             messages.add(message);
                             byte[] jsonBytes = new JSONObject().put("id", message.getId()).put("message", messageText).toString().getBytes(StandardCharsets.UTF_8);
                             responseStream = new ChannelOutputStream(exchange.getResponseChannel());
@@ -125,8 +133,11 @@ public class RestHandler implements HttpHandler {
                 }
                 else if (path.equals("/messages"))
                 {
-                    int count = Integer.parseInt(exchange.getQueryParameters().get("count").getFirst());
-                    int offset = Integer.parseInt(exchange.getQueryParameters().get("offset").getFirst());
+                    int count = exchange.getQueryParameters().get("count") != null ? Integer.parseInt(exchange.getQueryParameters().get("count").getFirst()) : 10;
+                    int offset = exchange.getQueryParameters().get("offset") != null ? Integer.parseInt(exchange.getQueryParameters().get("offset").getFirst()) : 0;
+                    //TODO: offset не более 100?
+                    //TODO: прочесть токен юзера сначала!!!!
+                    responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                     List<Message> messageSublist = offset + count <= messages.size() ? messages.subList(offset, offset + count) : messages.subList(offset, messages.size());
                     JSONObject respObj = new JSONObject();
                     JSONArray respArr = new JSONArray();
@@ -135,7 +146,12 @@ public class RestHandler implements HttpHandler {
                         respArr.put(new JSONObject().put("id", msg.getId()).put("message", msg.getMessage()).put("author", msg.getAuthorID()));
                     }
                     respObj.put("messages", respArr);
-                    System.out.println(respObj);
+                    byte[] jsonBytes = respObj.toString().getBytes(StandardCharsets.UTF_8);
+                    responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                    responseStream.write(jsonBytes);
+                    responseStream.close();
+
+                    //System.out.println(respObj);
 
                 }
                 else
