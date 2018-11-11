@@ -1,5 +1,6 @@
 package client;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -15,8 +16,8 @@ public class MessageRefresher implements Runnable {
     private int currentMessageID = 0;
     private static final int count = 25;
     //URL url;
-    String serverAddress;
-    String token;
+    private String serverAddress;
+    private String token;
 
 
     MessageRefresher(String serverAddress, String token)
@@ -43,9 +44,14 @@ public class MessageRefresher implements Runnable {
 
                 InputStream is = con.getInputStream();
                 String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
-                System.out.println(body);
-                //прибавить колво сообщений к cmID!
-                JSONObject loginInfo = new JSONObject(body);
+                //System.out.println(body);
+                //прибавить кол-во сообщений к cmID!
+                JSONArray messages = new JSONObject(body).getJSONArray("messages");
+                for (int i = 0; i < messages.length(); i++)
+                {
+                    System.out.print(messages.get(i));
+                }
+
                 is.close();
             }
             catch(IOException e) {}

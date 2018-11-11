@@ -69,6 +69,7 @@ public class Client {
                         con.setRequestProperty("Authorization", "Token " + token);
                         con.setRequestProperty("Host", "localhost");
                         is = con.getInputStream();
+                        //TODO: принять
                     }
                     else
                     {
