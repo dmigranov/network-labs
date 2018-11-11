@@ -14,7 +14,6 @@ public class Client {
             System.err.println("Not enough arguments");
             System.exit(1);
         }
-
         String username = args[1];
         String token;
         //Runtime.getRuntime().addShutdownHook(); //on exit - logout?
@@ -30,7 +29,6 @@ public class Client {
             OutputStream os = con.getOutputStream();
             byte data[] = new JSONObject().put("username", username).toString().getBytes(StandardCharsets.UTF_8);
             os.write(data);
-            //System.out.println(con.getResponseCode());
             if(con.getHeaderField("WWW-Authenticate") != null) {
                 System.out.println(con.getHeaderField("WWW-Authenticate"));
                 System.exit(2);
@@ -75,9 +73,8 @@ public class Client {
                         break;
                     }
                 }
-                else
+                else //post a message
                 {
-                    //post a message
                     url = new URL(args[0] + "/messages");
                     con = (HttpURLConnection)url.openConnection();
                     con.setRequestMethod("POST");

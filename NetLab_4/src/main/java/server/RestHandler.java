@@ -109,15 +109,23 @@ public class RestHandler implements HttpHandler {
                         break;
                 }
             } else if (method.equals("GET")) {
-                if (path.equals("/users")) {
+                if (path.equals("/users"))
+                {
                     System.out.println("get users");
                     //TODO: parse body!
-                } else if (path.matches("/users/(.+)")) {
-                    System.out.println(path);
-                } else if (path.matches("/messages/+")) //do i need to specify parameters here?
+                }
+                else if (path.matches("/users/(.+)"))
                 {
                     System.out.println(path);
-                } else {
+                }
+                else if (path.matches("/messages+")) //do i need to specify parameters here?
+                {
+                    exchange.getQueryParameters();//параметры
+                    System.out.println("count " + exchange.getQueryParameters().get("count").getFirst());
+                    System.out.println("offset " + exchange.getQueryParameters().get("offset").getFirst());
+                }
+                else
+                {
                     exchange.setStatusCode(405);
                     System.out.println(405);
                 }
