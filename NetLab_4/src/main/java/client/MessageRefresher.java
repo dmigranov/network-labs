@@ -18,13 +18,15 @@ public class MessageRefresher implements Runnable {
     private String serverAddress;
     private String token;
     private int uid;
+    private Users users;
 
 
-    MessageRefresher(String serverAddress, String token, int uid)
+    MessageRefresher(String serverAddress, String token, int uid, Users users)
     {
         this.serverAddress = serverAddress;
         this.token = token;
         this.uid = uid;
+        this.users = users;
     }
 
     @Override
@@ -52,6 +54,10 @@ public class MessageRefresher implements Runnable {
                     int messageUid = msg.getInt("author");
                     if(messageUid != uid)
                     {
+                        if(users.getUsers().containsKey(uid))
+                            ;
+                        else
+                            getNickname(uid);
                         //TODO: выводить имя, а не ID! если есть в Users id, то выводить никнейм сразу, иначе - по методу обратиться к серверу и добавить в список
                         System.out.println(messageUid +": " + msg.getString("message"));
                     }
@@ -65,5 +71,8 @@ public class MessageRefresher implements Runnable {
 
 
         }
+    }
+
+    private void getNickname(int uid) {
     }
 }

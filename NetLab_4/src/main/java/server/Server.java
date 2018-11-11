@@ -1,6 +1,5 @@
 package server;
 
-
 import io.undertow.Undertow;
 
 import java.io.IOException;

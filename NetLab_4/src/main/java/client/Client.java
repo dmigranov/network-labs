@@ -17,6 +17,7 @@ public class Client {
         }
         String username = args[1];
         String token;
+        Users users = new Users();
         //Runtime.getRuntime().addShutdownHook(); //on exit - logout?
 
         try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
@@ -43,7 +44,7 @@ public class Client {
             is.close();
             con.disconnect();
 
-            new Thread(new MessageRefresher(args[0], token, uid)).start();
+            new Thread(new MessageRefresher(args[0], token, uid, users)).start();
 
             System.out.println("Connected with username " + username);
 
