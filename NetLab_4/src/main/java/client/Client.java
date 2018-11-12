@@ -69,7 +69,6 @@ public class Client {
                         con.setRequestProperty("Authorization", "Token " + token);
                         con.setRequestProperty("Host", "localhost");
                         is = con.getInputStream();
-                        is = con.getInputStream();
                         System.out.println(new JSONObject(getStringFromStream(is)).get("users"));
                         is.close();
                     }

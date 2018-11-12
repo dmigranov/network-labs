@@ -38,7 +38,6 @@ public class RestHandler implements HttpHandler {
         try (ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel()))
         {
             String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
-            //System.out.println(body);
             if (method.equals("POST")) {
                 switch (path) {
                     case "/login":
