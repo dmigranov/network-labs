@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-
 public class RestHandler implements HttpHandler {
     static private List<User> users = new CopyOnWriteArrayList<>();
     static private List<Message> messages = new CopyOnWriteArrayList<>();
@@ -33,7 +32,6 @@ public class RestHandler implements HttpHandler {
         String method = exchange.getRequestMethod().toString();
         HeaderMap requestHeaders = exchange.getRequestHeaders();
         HeaderMap responseHeaders = exchange.getResponseHeaders();
-        //String path = exchange.getRequestURI();
         String path = exchange.getRequestPath();
         ChannelOutputStream responseStream;
 
@@ -126,7 +124,7 @@ public class RestHandler implements HttpHandler {
                 if (path.equals("/users"))
                 {
                     System.out.println("get users");
-                    //TODO: parse body!
+                    //TODO: реализовать!
                 }
                 else if (path.matches("/users/(.+)"))
                 {
@@ -137,7 +135,7 @@ public class RestHandler implements HttpHandler {
                         int uid = findUser(token);
                         if(uid == -1)
                         {
-                            exchange.setStatusCode(403); //токен неизвестен  серверу
+                            exchange.setStatusCode(403);
                         }
                         else {
                             responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
@@ -181,9 +179,6 @@ public class RestHandler implements HttpHandler {
                     responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                     responseStream.write(jsonBytes);
                     responseStream.close();
-
-                    //System.out.println(respObj);
-
                 }
                 else
                 {
@@ -215,7 +210,6 @@ public class RestHandler implements HttpHandler {
         }
         return -1;
     }
-
 
     private boolean containsName(String username) {
         for (User user : users)//synchro?

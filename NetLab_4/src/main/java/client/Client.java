@@ -46,8 +46,6 @@ public class Client {
 
             new Thread(new MessageRefresher(args[0], token, uid, users)).start();
 
-            //System.out.println("Connected with username " + username);
-
             String str;
             while((str = br.readLine()) != null)
             {
