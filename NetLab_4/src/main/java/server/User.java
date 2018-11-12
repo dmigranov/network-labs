@@ -6,7 +6,7 @@ public class User {
     private static int counter = 0;
     private int id;
     private String username;
-    //private boolean online; //мож потом понадобится
+    private boolean online = true; //мож потом понадобится
     private String token;
 
     public User(String username)
@@ -31,5 +31,8 @@ public class User {
     }
 
 
+    public boolean getOnline() {
+        return online;
+    }
 }
 

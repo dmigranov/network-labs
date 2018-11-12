@@ -123,8 +123,33 @@ public class RestHandler implements HttpHandler {
             {
                 if (path.equals("/users"))
                 {
-                    System.out.println("get users");
-                    //TODO: реализовать!
+                    HeaderValues authorizationHeader;
+                    if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
+                    {
+                        String token = authorizationHeader.get(0).substring(6);
+                        int uid = findUser(token);
+                        if(uid == -1)
+                        {
+                            exchange.setStatusCode(403);
+                        }
+                        else
+                        {
+                            responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
+                            JSONObject respObj = new JSONObject();
+                            JSONArray respArr = new JSONArray();
+                            for (User user : users)
+                            {
+                                respArr.put(new JSONObject().put("id", user.getId()).put("username", user.getUsername()).put("online", user.getOnline()));
+                            }
+                            respObj.put("users", respArr);
+                            byte[] jsonBytes = respObj.toString().getBytes(StandardCharsets.UTF_8);
+                            responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                            responseStream.write(jsonBytes);
+                            responseStream.close();
+                        }
+                    }
+                    else
+                        exchange.setStatusCode(400);
                 }
                 else if (path.matches("/users/(.+)"))
                 {
@@ -203,7 +228,7 @@ public class RestHandler implements HttpHandler {
     }
 
     private int findUser(String token) {
-        for (User user : users)//synchro?
+        for (User user : users)
         {
             if (user.getToken().equals(token))
                 return user.getId();
@@ -222,7 +247,7 @@ public class RestHandler implements HttpHandler {
 
     private String deleteUserWithToken(String token)
     {
-        for (User user : users)//synchro?
+        for (User user : users)
         {
             if (user.getToken().equals(token)) {
                 String username = user.getUsername();
