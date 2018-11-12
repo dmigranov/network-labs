@@ -1,5 +1,6 @@
 package client;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -69,7 +70,11 @@ public class Client {
                         con.setRequestProperty("Authorization", "Token " + token);
                         con.setRequestProperty("Host", "localhost");
                         is = con.getInputStream();
-                        System.out.println(new JSONObject(getStringFromStream(is)).get("users"));
+                        JSONArray usersArray = new JSONObject(getStringFromStream(is)).getJSONArray("users");
+                        for (int i = 0; i < usersArray.length(); i++) {
+                            JSONObject msg = usersArray.getJSONObject(i);
+                            System.out.println(msg.get("username") + " - "+ (msg.getBoolean("online") == true ? "online" : "offline"));
+                        }
                         is.close();
                     }
                     else

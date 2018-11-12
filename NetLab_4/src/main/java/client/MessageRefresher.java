@@ -64,7 +64,6 @@ public class MessageRefresher implements Runnable {
                             if (username == null)
                                 username = "User" + messageUid;
                         }
-                        //TODO: выводить имя, а не ID! если есть в Users id, то выводить никнейм сразу, иначе - по методу обратиться к серверу и добавить в список
                         System.out.println(username +": " + msg.getString("message"));
                     }
                     messagesAccepted++;
@@ -73,9 +72,6 @@ public class MessageRefresher implements Runnable {
                 is.close();
             }
             catch(IOException e) {}
-            //create a get /messages req
-
-
         }
     }
 
