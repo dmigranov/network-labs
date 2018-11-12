@@ -55,7 +55,9 @@ public class MessageRefresher implements Runnable {
                     String username;
                     if(messageUid != uid)
                     {
-                        if(users.getUsers().containsKey(messageUid))
+                        if(messageUid == -1)
+                            username = "System";
+                        else if(users.getUsers().containsKey(messageUid))
                             username = users.getUsers().get(messageUid);
                         else {
                             username = getNickname(messageUid);

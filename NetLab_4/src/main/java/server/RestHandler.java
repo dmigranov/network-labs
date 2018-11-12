@@ -61,7 +61,7 @@ public class RestHandler implements HttpHandler {
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
                                 responseStream.close();
-                                //TODO: добавить системное сообщение  о логине
+                                messages.add(new Message(username + " joined in", -1));
                             }
                             else {
                                 exchange.setStatusCode(401);
@@ -75,7 +75,8 @@ public class RestHandler implements HttpHandler {
                         HeaderValues authorizationHeader;
                         if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                         {
-                            if (deleteUserWithToken(authorizationHeader.get(0).substring(6)))
+                            String username;
+                            if ((username = deleteUserWithToken(authorizationHeader.get(0).substring(6))) != null)
                             {
                                 responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                                 JSONObject respObject = new JSONObject();
@@ -84,7 +85,7 @@ public class RestHandler implements HttpHandler {
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
                                 responseStream.close();
-                                //TODO: добавить системное сообщение  о логауте
+                                messages.add(new Message(username + " left", -1));
                             }
                         }
                         else
@@ -129,7 +130,6 @@ public class RestHandler implements HttpHandler {
                 }
                 else if (path.matches("/users/(.+)"))
                 {
-                    //System.out.println();
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                     {
@@ -226,16 +226,17 @@ public class RestHandler implements HttpHandler {
         return false;
     }
 
-    private boolean deleteUserWithToken(String token)
+    private String deleteUserWithToken(String token)
     {
         for (User user : users)//synchro?
         {
             if (user.getToken().equals(token)) {
+                String username = user.getUsername();
                 users.remove(user);
-                return true;
+                return username;
             }
         }
-        return false;
+        return null;
     }
 }
 
