@@ -52,14 +52,18 @@ public class MessageRefresher implements Runnable {
                 {
                     JSONObject msg = (JSONObject)messages.get(i);
                     int messageUid = msg.getInt("author");
+                    String username;
                     if(messageUid != uid)
                     {
-                        if(users.getUsers().containsKey(uid))
-                            ;
-                        else
-                            getNickname(uid);
+                        if(users.getUsers().containsKey(messageUid))
+                            username = users.getUsers().get(messageUid);
+                        else {
+                            username = getNickname(messageUid);
+                            if (username == null)
+                                username = "User" + messageUid;
+                        }
                         //TODO: выводить имя, а не ID! если есть в Users id, то выводить никнейм сразу, иначе - по методу обратиться к серверу и добавить в список
-                        System.out.println(messageUid +": " + msg.getString("message"));
+                        System.out.println(username +": " + msg.getString("message"));
                     }
                     messagesAccepted++;
                 }
@@ -73,6 +77,16 @@ public class MessageRefresher implements Runnable {
         }
     }
 
-    private void getNickname(int uid) {
+    private String getNickname(int uid) throws IOException {
+        URL url = new URL(serverAddress + "/users/" + uid); //не забывать считать скольк на самом деле!
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("Authorization", "Token " + token);
+        con.setRequestProperty("Host", "localhost");
+        if(con.getResponseCode() == 404)
+            return null;
+        InputStream is = con.getInputStream();
+        String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
+        return (String)new JSONObject(body).get("username");
     }
 }

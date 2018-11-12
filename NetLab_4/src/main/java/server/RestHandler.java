@@ -56,7 +56,7 @@ public class RestHandler implements HttpHandler {
                                 respObject.put("username", username);
                                 respObject.put("online", true);
                                 respObject.put("token", user.getToken());
-                                System.out.println(user.getToken()); //удоли
+                                //System.out.println(user.getToken()); //удоли
                                 byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
@@ -93,7 +93,6 @@ public class RestHandler implements HttpHandler {
                     case "/messages":
                         if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null && requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json"))
                         {
-                            responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                             String token = authorizationHeader.get(0).substring(6);
                             reqObj = new JSONObject(body);
                             String messageText = reqObj.getString("message");
@@ -103,6 +102,7 @@ public class RestHandler implements HttpHandler {
                                 exchange.setStatusCode(403); //токен неизвестен  серверу
                                 break;
                             }
+                            responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                             Message message = new Message(messageText, uid);
                             messages.add(message);
                             byte[] jsonBytes = new JSONObject().put("id", message.getId()).put("message", messageText).toString().getBytes(StandardCharsets.UTF_8);
@@ -129,7 +129,38 @@ public class RestHandler implements HttpHandler {
                 }
                 else if (path.matches("/users/(.+)"))
                 {
-                    System.out.println(path);
+                    //System.out.println();
+                    HeaderValues authorizationHeader;
+                    if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
+                    {
+                        String token = authorizationHeader.get(0).substring(6);
+                        int uid = findUser(token);
+                        if(uid == -1)
+                        {
+                            exchange.setStatusCode(403); //токен неизвестен  серверу
+                        }
+                        else {
+                            responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
+                            uid = Integer.parseInt(path.substring(7));
+                            User user = findUserWithID(uid);
+
+                            if(user == null)
+                                exchange.setStatusCode(404);
+                            else {
+                                JSONObject respObject = new JSONObject();
+                                respObject.put("id", uid);
+                                respObject.put("username", user.getUsername());
+                                respObject.put("online", true); //?
+                                byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
+                                responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                                responseStream.write(jsonBytes);
+                                responseStream.close();
+                            }
+                        }
+                    }
+                    else
+                        exchange.setStatusCode(400);
+
                 }
                 else if (path.equals("/messages"))
                 {
@@ -165,6 +196,15 @@ public class RestHandler implements HttpHandler {
         {
             exchange.setStatusCode(500);
         }
+    }
+
+    private User findUserWithID(int uid) {
+        for (User user : users)
+        {
+            if (user.getId() == uid)
+                return user;
+        }
+        return null;
     }
 
     private int findUser(String token) {
