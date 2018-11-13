@@ -52,7 +52,7 @@ public class Client {
             String str;
             while((str = br.readLine()) != null)
             {
-                if(str.charAt(0) == '/')
+                if(!str.equals("") && str.charAt(0) == '/')
                 {
                     if (str.equals("/logout"))
                     {
@@ -112,6 +112,8 @@ public class Client {
             System.exit(5);
         }
     }
+
+    //TODO: обернуть while вокруг try, чтобы при ошибке (мало ли) цикл продолжался
 
     static private String getStringFromStream(InputStream is)
     {
