@@ -77,9 +77,10 @@ public class RestHandler implements HttpHandler {
                         HeaderValues authorizationHeader;
                         if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                         {
-                            String username;
-                            if ((username = deleteUserWithToken(authorizationHeader.get(0).substring(6))) != null)//
-                            {
+                            //String username;
+                            //if ((username = deleteUserWithToken(authorizationHeader.get(0).substring(6))) != null)
+                            //{
+                                User user = findUserWithToken(authorizationHeader.get(0).substring(6));
                                 responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                                 JSONObject respObject = new JSONObject();
                                 respObject.put("message", "bye!");
@@ -87,8 +88,9 @@ public class RestHandler implements HttpHandler {
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
                                 responseStream.close();
-                                messages.add(new Message(username + " left", -1));
-                            }
+                                user.setOffline();
+                                messages.add(new Message(user.getUsername() + " left", -1));
+                            //}
                         }
                         else
                             exchange.setStatusCode(400);
@@ -262,14 +264,12 @@ public class RestHandler implements HttpHandler {
         return false;
     }
 
-    private String deleteUserWithToken(String token)
+    private User findUserWithToken(String token)
     {
         for (User user : users)
         {
             if (user.getToken().equals(token)) {
-                String username = user.getUsername();
-                users.remove(user);
-                return username;
+                return user;
             }
         }
         return null;
