@@ -2,10 +2,8 @@ package server;
 
 import io.undertow.Undertow;
 
-import java.io.IOException;
-
 public class Server {
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
     {
         if(args.length < 1){
             System.err.println("Not enough arguments");
@@ -17,5 +15,9 @@ public class Server {
 
         server = builder.build();
         server.start();
+
+        //TODO: cleaner
+        //while true sleep counter++ isOnline = false
+
     }
 }

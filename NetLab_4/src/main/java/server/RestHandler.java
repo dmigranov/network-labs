@@ -51,7 +51,7 @@ public class RestHandler implements HttpHandler {
                                 JSONObject respObject = new JSONObject();
                                 respObject.put("id", user.getId());
                                 respObject.put("username", username);
-                                respObject.put("online", true);
+                                respObject.put("online", user.isOnline());
                                 respObject.put("token", user.getToken());
                                 //System.out.println(user.getToken()); //удоли
                                 byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
@@ -138,7 +138,7 @@ public class RestHandler implements HttpHandler {
                             JSONArray respArr = new JSONArray();
                             for (User user : users)
                             {
-                                respArr.put(new JSONObject().put("id", user.getId()).put("username", user.getUsername()).put("online", user.getOnline()));
+                                respArr.put(new JSONObject().put("id", user.getId()).put("username", user.getUsername()).put("online", user.isOnline()));
                             }
                             respObj.put("users", respArr);
                             byte[] jsonBytes = respObj.toString().getBytes(StandardCharsets.UTF_8);
@@ -172,7 +172,7 @@ public class RestHandler implements HttpHandler {
                                 JSONObject respObject = new JSONObject();
                                 respObject.put("id", uid);
                                 respObject.put("username", user.getUsername());
-                                respObject.put("online", true); //?
+                                respObject.put("online", user.isOnline());
                                 byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
@@ -186,23 +186,34 @@ public class RestHandler implements HttpHandler {
                 }
                 else if (path.equals("/messages"))
                 {
-                    int count = exchange.getQueryParameters().get("count") != null ? Integer.parseInt(exchange.getQueryParameters().get("count").getFirst()) : 10;
-                    int offset = exchange.getQueryParameters().get("offset") != null ? Integer.parseInt(exchange.getQueryParameters().get("offset").getFirst()) : 0;
-                    //TODO: offset не более 100?
-                    //TODO: прочесть токен юзера сначала!!!!
-                    responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
-                    List<Message> messageSublist = offset + count <= messages.size() ? messages.subList(offset, offset + count) : messages.subList(offset, messages.size());
-                    JSONObject respObj = new JSONObject();
-                    JSONArray respArr = new JSONArray();
-                    for (Message msg : messageSublist)
-                    {
-                        respArr.put(new JSONObject().put("id", msg.getId()).put("message", msg.getMessage()).put("author", msg.getAuthorID()));
+                    HeaderValues authorizationHeader;
+                    if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
+                        String token = authorizationHeader.get(0).substring(6);
+                        int uid = findUser(token);
+                        if(uid == -1)
+                        {
+                            exchange.setStatusCode(403);
+                        }
+                        else {
+                            int count = exchange.getQueryParameters().get("count") != null ? Integer.parseInt(exchange.getQueryParameters().get("count").getFirst()) : 10;
+                            int offset = exchange.getQueryParameters().get("offset") != null ? Integer.parseInt(exchange.getQueryParameters().get("offset").getFirst()) : 0;
+                            if (offset > 100)
+                                offset = 100;
+
+                            responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
+                            List<Message> messageSublist = offset + count <= messages.size() ? messages.subList(offset, offset + count) : messages.subList(offset, messages.size());
+                            JSONObject respObj = new JSONObject();
+                            JSONArray respArr = new JSONArray();
+                            for (Message msg : messageSublist) {
+                                respArr.put(new JSONObject().put("id", msg.getId()).put("message", msg.getMessage()).put("author", msg.getAuthorID()));
+                            }
+                            respObj.put("messages", respArr);
+                            byte[] jsonBytes = respObj.toString().getBytes(StandardCharsets.UTF_8);
+                            responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                            responseStream.write(jsonBytes);
+                            responseStream.close();
+                        }
                     }
-                    respObj.put("messages", respArr);
-                    byte[] jsonBytes = respObj.toString().getBytes(StandardCharsets.UTF_8);
-                    responseStream = new ChannelOutputStream(exchange.getResponseChannel());
-                    responseStream.write(jsonBytes);
-                    responseStream.close();
                 }
                 else
                 {

@@ -6,10 +6,10 @@ public class User {
     private static int counter = 0;
     private int id;
     private String username;
-    private boolean online = true; //мож потом понадобится
+    private boolean isOnline = true; //мож потом понадобится
     private String token;
 
-    public User(String username)
+    User(String username)
     {
         this.username = username;
         id = counter++;
@@ -31,8 +31,8 @@ public class User {
     }
 
 
-    public boolean getOnline() {
-        return online;
+    public boolean isOnline() {
+        return isOnline;
     }
 }
 

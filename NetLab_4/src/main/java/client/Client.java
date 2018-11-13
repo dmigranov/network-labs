@@ -16,8 +16,10 @@ public class Client {
             System.err.println("Not enough arguments");
             System.exit(1);
         }
+
         String username = args[1];
-        String token;
+        String token = null;
+        //TODO: if args[2] exists token = args[2]; if token !=null не надо авторизовываться .а использовать токен-аргумент
         Users users = new Users();
         //Runtime.getRuntime().addShutdownHook(); //on exit - logout?
 
