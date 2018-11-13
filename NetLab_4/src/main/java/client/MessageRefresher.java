@@ -48,10 +48,12 @@ public class MessageRefresher implements Runnable {
                 InputStream is = con.getInputStream();
                 String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
                 JSONArray messages = new JSONObject(body).getJSONArray("messages");
+                int messageId = 0;
                 for (int i = 0; i < messages.length(); i++)
                 {
                     JSONObject msg = (JSONObject)messages.get(i);
                     int messageUid = msg.getInt("author");
+                    messageId = msg.getInt("id");
                     String username;
                     if(messageUid != uid)
                     {
@@ -85,6 +87,7 @@ public class MessageRefresher implements Runnable {
             return null;
         InputStream is = con.getInputStream();
         String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
+        is.close();
         return (String)new JSONObject(body).get("username");
     }
 }

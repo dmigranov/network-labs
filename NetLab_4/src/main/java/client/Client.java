@@ -19,34 +19,48 @@ public class Client {
 
         String username = args[1];
         String token = null;
+        int uid = 0;
         //TODO: if args[2] exists token = args[2]; if token !=null не надо авторизовываться .а использовать токен-аргумент
+        if(args.length > 3) {
+            token = args[2];
+            uid = Integer.parseInt(args[3]);
+        }
         Users users = new Users();
         //Runtime.getRuntime().addShutdownHook(); //on exit - logout?
 
         try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
         {
-            URL url = new URL(args[0] + "/login");
-            HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            con.setDoOutput(true);
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Host", "localhost");
-            con.setRequestProperty("Content-Type", "application/json");
-            OutputStream os = con.getOutputStream();
-            byte data[] = new JSONObject().put("username", username).toString().getBytes(StandardCharsets.UTF_8);
-            os.write(data);
-            if(con.getHeaderField("WWW-Authenticate") != null) {
-                System.out.println(con.getHeaderField("WWW-Authenticate"));
-                System.exit(2);
-            }
-            InputStream is = con.getInputStream();
-            String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
-            JSONObject loginInfo = new JSONObject(body);
-            token = loginInfo.getString("token");
-            int uid = loginInfo.getInt("id");
-            os.close();
-            is.close();
-            con.disconnect();
+            URL url;
+            HttpURLConnection con;
+            OutputStream os;
+            InputStream is;
+            byte data[];
+            if(token == null) {
+                url = new URL(args[0] + "/login");
+                con = (HttpURLConnection) url.openConnection();
+                con.setDoOutput(true);
+                con.setRequestMethod("POST");
+                con.setRequestProperty("Host", "localhost");
+                con.setRequestProperty("Content-Type", "application/json");
 
+                os = con.getOutputStream();
+                data = new JSONObject().put("username", username).toString().getBytes(StandardCharsets.UTF_8);
+                os.write(data);
+                if (con.getHeaderField("WWW-Authenticate") != null) {
+                    System.out.println(con.getHeaderField("WWW-Authenticate"));
+                    System.exit(2);
+                }
+
+                is = con.getInputStream();
+                String body = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")); //мож по другому
+                JSONObject loginInfo = new JSONObject(body);
+                token = loginInfo.getString("token");
+                uid = loginInfo.getInt("id");
+                os.close();
+                is.close();
+                con.disconnect();
+                System.out.println("Your token and id are: " + token + " and " + uid + ". Please remember them to be able to re-login");
+            }
             new Thread(new MessageRefresher(args[0], token, uid, users)).start();
 
             String str;
@@ -102,6 +116,7 @@ public class Client {
                     is = con.getInputStream();
                     new JSONObject(getStringFromStream(is)).get("id"); //а что выводить? надо ли?
                     is.close();
+                    os.close();
 
                 }
             }
