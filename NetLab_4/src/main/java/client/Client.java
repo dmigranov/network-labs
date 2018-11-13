@@ -20,7 +20,6 @@ public class Client {
         String username = args[1];
         String token = null;
         int uid = 0;
-        //TODO: if args[2] exists token = args[2]; if token !=null не надо авторизовываться .а использовать токен-аргумент
         if(args.length > 3) {
             token = args[2];
             uid = Integer.parseInt(args[3]);

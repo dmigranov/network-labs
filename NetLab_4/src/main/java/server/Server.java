@@ -15,7 +15,8 @@ public class Server {
         int port = Integer.parseInt(args[0]);
         Undertow server;
         List<User> users = new CopyOnWriteArrayList<>();
-        Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new RestHandler(users));
+        List<Message> messages = new CopyOnWriteArrayList<>();
+        Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new RestHandler(users, messages));
 
         server = builder.build();
         server.start();
@@ -27,8 +28,10 @@ public class Server {
             }
 
             for (User user : users) {
-                if(user.incrementOnlineCounter() > 5)
+                if(user.incrementOnlineCounter() > 5 && user.isOnline()) {
                     user.setOffline();
+                    messages.add(new Message(user.getUsername() + " left", -1));
+                }
             }
         }
     }

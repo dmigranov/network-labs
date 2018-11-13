@@ -15,16 +15,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class RestHandler implements HttpHandler {
-    static private List<User> users;
-    static private List<Message> messages = new CopyOnWriteArrayList<>();
+    private List<User> users;
+    private List<Message> messages;
 
-    public RestHandler(List<User> users)
+    RestHandler(List<User> users, List<Message> messages)
     {
         this.users = users;
+        this.messages = messages;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class RestHandler implements HttpHandler {
                             //String username;
                             //if ((username = deleteUserWithToken(authorizationHeader.get(0).substring(6))) != null)
                             //{
-                                User user = findUserWithToken(authorizationHeader.get(0).substring(6));
+                                User user = returnUserWithToken(authorizationHeader.get(0).substring(6));
                                 responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                                 JSONObject respObject = new JSONObject();
                                 respObject.put("message", "bye!");
@@ -249,6 +249,7 @@ public class RestHandler implements HttpHandler {
         {
             if (user.getToken().equals(token)) {
                 user.setOnlineCounter(0);
+                //user.setOnline();
                 return user.getId();
             }
         }
@@ -264,7 +265,7 @@ public class RestHandler implements HttpHandler {
         return false;
     }
 
-    private User findUserWithToken(String token)
+    private User returnUserWithToken(String token)
     {
         for (User user : users)
         {
