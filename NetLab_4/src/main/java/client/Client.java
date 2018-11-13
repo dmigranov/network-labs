@@ -113,8 +113,6 @@ public class Client {
         }
     }
 
-    //TODO: обернуть while вокруг try, чтобы при ошибке (мало ли) цикл продолжался
-
     static private String getStringFromStream(InputStream is)
     {
         return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));

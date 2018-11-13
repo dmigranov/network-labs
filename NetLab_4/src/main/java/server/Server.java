@@ -20,8 +20,16 @@ public class Server {
         server = builder.build();
         server.start();
 
-        //TODO: cleaner
-        //while true sleep counter++ isOnline = false
+        while(true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
 
+            for (User user : users) {
+                if(user.incrementOnlineCounter() > 5)
+                    user.setOffline();
+            }
+        }
     }
 }

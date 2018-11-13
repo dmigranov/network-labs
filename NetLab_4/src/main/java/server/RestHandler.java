@@ -78,7 +78,7 @@ public class RestHandler implements HttpHandler {
                         if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                         {
                             String username;
-                            if ((username = deleteUserWithToken(authorizationHeader.get(0).substring(6))) != null)
+                            if ((username = deleteUserWithToken(authorizationHeader.get(0).substring(6))) != null)//
                             {
                                 responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                                 JSONObject respObject = new JSONObject();
@@ -245,8 +245,10 @@ public class RestHandler implements HttpHandler {
     private int findUser(String token) {
         for (User user : users)
         {
-            if (user.getToken().equals(token))
+            if (user.getToken().equals(token)) {
+                user.setOnlineCounter(0);
                 return user.getId();
+            }
         }
         return -1;
     }

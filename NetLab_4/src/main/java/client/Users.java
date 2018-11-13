@@ -11,5 +11,4 @@ public class Users {
     public Map<Integer, String> getUsers() {
         return users;
     }
-
 }
