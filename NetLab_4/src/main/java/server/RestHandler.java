@@ -19,8 +19,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class RestHandler implements HttpHandler {
-    static private List<User> users = new CopyOnWriteArrayList<>();
+    static private List<User> users;
     static private List<Message> messages = new CopyOnWriteArrayList<>();
+
+    public RestHandler(List<User> users)
+    {
+        this.users = users;
+    }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) {
