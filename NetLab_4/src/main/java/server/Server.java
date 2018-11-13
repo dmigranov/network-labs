@@ -29,7 +29,7 @@ public class Server {
 
             for (User user : users) {
                 if(user.incrementOnlineCounter() > 5 && user.isOnline()) {
-                    user.setOffline();
+                    user.setOnline(false);
                     messages.add(new Message(user.getUsername() + " left", -1));
                 }
             }

@@ -80,7 +80,7 @@ public class RestHandler implements HttpHandler {
                             //String username;
                             //if ((username = deleteUserWithToken(authorizationHeader.get(0).substring(6))) != null)
                             //{
-                                User user = returnUserWithToken(authorizationHeader.get(0).substring(6));
+                                User user = findUser(authorizationHeader.get(0).substring(6));
                                 responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                                 JSONObject respObject = new JSONObject();
                                 respObject.put("message", "bye!");
@@ -88,7 +88,7 @@ public class RestHandler implements HttpHandler {
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
                                 responseStream.close();
-                                user.setOffline();
+                                user.setOnline(false);
                                 messages.add(new Message(user.getUsername() + " left", -1));
                             //}
                         }
@@ -101,12 +101,14 @@ public class RestHandler implements HttpHandler {
                             String token = authorizationHeader.get(0).substring(6);
                             reqObj = new JSONObject(body);
                             String messageText = reqObj.getString("message");
-                            int uid = findUser(token);
+
+                            int uid = findUser(token).getId();
                             if(uid == -1)
                             {
                                 exchange.setStatusCode(403); //токен неизвестен  серверу
                                 break;
                             }
+
                             responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                             Message message = new Message(messageText, uid);
                             messages.add(message);
@@ -133,7 +135,8 @@ public class RestHandler implements HttpHandler {
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                     {
                         String token = authorizationHeader.get(0).substring(6);
-                        int uid = findUser(token);
+                        User usr = findUser(token);
+                        int uid = usr != null?  usr.getId() : -1;
                         if(uid == -1)
                         {
                             exchange.setStatusCode(403);
@@ -163,7 +166,8 @@ public class RestHandler implements HttpHandler {
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                     {
                         String token = authorizationHeader.get(0).substring(6);
-                        int uid = findUser(token);
+                        User usr = findUser(token);
+                        int uid = usr != null?  usr.getId() : -1;
                         if(uid == -1)
                         {
                             exchange.setStatusCode(403);
@@ -196,12 +200,18 @@ public class RestHandler implements HttpHandler {
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);
-                        int uid = findUser(token);
+                        User user = findUser(token);
+                        int uid = user != null?  user.getId() : -1;
                         if(uid == -1)
                         {
                             exchange.setStatusCode(403);
                         }
                         else {
+                            if(user.isOnline() == false)
+                            {
+                                user.setOnline(true);
+                                messages.add(new Message(user.getUsername() + " returned", -1));
+                            }
                             int count = exchange.getQueryParameters().get("count") != null ? Integer.parseInt(exchange.getQueryParameters().get("count").getFirst()) : 10;
                             int offset = exchange.getQueryParameters().get("offset") != null ? Integer.parseInt(exchange.getQueryParameters().get("offset").getFirst()) : 0;
                             if (offset > 100)
@@ -238,13 +248,14 @@ public class RestHandler implements HttpHandler {
     private User findUserWithID(int uid) {
         for (User user : users)
         {
+
             if (user.getId() == uid)
                 return user;
         }
         return null;
     }
 
-    private int findUser(String token) {
+    /*private int findUser(String token) {
         for (User user : users)
         {
             if (user.getToken().equals(token)) {
@@ -254,7 +265,7 @@ public class RestHandler implements HttpHandler {
             }
         }
         return -1;
-    }
+    }*/
 
     private boolean containsName(String username) {
         for (User user : users)//synchro?
@@ -265,11 +276,12 @@ public class RestHandler implements HttpHandler {
         return false;
     }
 
-    private User returnUserWithToken(String token)
+    private User findUser(String token)
     {
         for (User user : users)
         {
             if (user.getToken().equals(token)) {
+                user.setOnlineCounter(0);
                 return user;
             }
         }

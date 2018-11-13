@@ -46,8 +46,8 @@ public class User {
         return ++onlineCounter;
     }
 
-    public void setOffline() {
-        isOnline = false;
+    public void setOnline(boolean isOnline) {
+        this.isOnline = isOnline;
     }
 }
 
