@@ -106,7 +106,7 @@ public class RestHandler implements HttpHandler {
                             int uid = findUser(token).getId();
                             if(uid == -1)
                             {
-                                exchange.setStatusCode(403); //токен неизвестен  серверу
+                                exchange.setStatusCode(403); //токен неизвестен серверу
                                 break;
                             }
 
@@ -224,13 +224,9 @@ public class RestHandler implements HttpHandler {
 
                             JSONObject respObj = new JSONObject();
                             JSONArray respArr = new JSONArray();
-                            /*for (Message msg : messageSublist) {
-                                respArr.put(new JSONObject().put("id", msg.getId()).put("message", msg.getMessage()).put("author", msg.getAuthorID()));
-                            }*/
 
                             for(int id = offset; id < offset + subMessages.size(); id++)
                             {
-                                //System.out.println(id);
                                 Message msg = messages.get(id);
                                 respArr.put(new JSONObject().put("id", id).put("message", msg.getMessage()).put("author", msg.getAuthorID()));
                             }
