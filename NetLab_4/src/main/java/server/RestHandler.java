@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 
 public class RestHandler implements HttpHandler {
     private List<User> users;
-    private List<Message> messages;
+    private Messages messages;
+    //TODO: интерфейс для хранения юзеров и сообщений
+    //TODO: разбить на паттерн фабрика и команда
 
-    RestHandler(List<User> users, List<Message> messages)
+    RestHandler(List<User> users, Messages messages)
     {
         this.users = users;
         this.messages = messages;
@@ -58,7 +60,6 @@ public class RestHandler implements HttpHandler {
                                 respObject.put("username", username);
                                 respObject.put("online", user.isOnline());
                                 respObject.put("token", user.getToken());
-                                //System.out.println(user.getToken()); //удоли
                                 byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
                                 responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                                 responseStream.write(jsonBytes);
@@ -111,8 +112,9 @@ public class RestHandler implements HttpHandler {
 
                             responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                             Message message = new Message(messageText, uid);
-                            messages.add(message);
-                            byte[] jsonBytes = new JSONObject().put("id", message.getId()).put("message", messageText).toString().getBytes(StandardCharsets.UTF_8);
+                            int id = messages.add(message);
+
+                            byte[] jsonBytes = new JSONObject().put("id", id).put("message", messageText).toString().getBytes(StandardCharsets.UTF_8);
                             responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                             responseStream.write(jsonBytes);
                             responseStream.close();
@@ -218,12 +220,21 @@ public class RestHandler implements HttpHandler {
                                 offset = 100;
 
                             responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
-                            List<Message> messageSublist = offset + count <= messages.size() ? messages.subList(offset, offset + count) : messages.subList(offset, messages.size());
+                            Messages subMessages = offset + count <= messages.size() ? messages.subMessages(offset, offset + count) : messages.subMessages(offset, messages.size());
+
                             JSONObject respObj = new JSONObject();
                             JSONArray respArr = new JSONArray();
-                            for (Message msg : messageSublist) {
+                            /*for (Message msg : messageSublist) {
                                 respArr.put(new JSONObject().put("id", msg.getId()).put("message", msg.getMessage()).put("author", msg.getAuthorID()));
+                            }*/
+
+                            for(int id = offset; id < offset + subMessages.size(); id++)
+                            {
+                                //System.out.println(id);
+                                Message msg = messages.get(id);
+                                respArr.put(new JSONObject().put("id", id).put("message", msg.getMessage()).put("author", msg.getAuthorID()));
                             }
+
                             respObj.put("messages", respArr);
                             byte[] jsonBytes = respObj.toString().getBytes(StandardCharsets.UTF_8);
                             responseStream = new ChannelOutputStream(exchange.getResponseChannel());
@@ -255,20 +266,9 @@ public class RestHandler implements HttpHandler {
         return null;
     }
 
-    /*private int findUser(String token) {
-        for (User user : users)
-        {
-            if (user.getToken().equals(token)) {
-                user.setOnlineCounter(0);
-                //user.setOnline();
-                return user.getId();
-            }
-        }
-        return -1;
-    }*/
 
     private boolean containsName(String username) {
-        for (User user : users)//synchro?
+        for (User user : users)
         {
             if (user.getUsername().equals(username))
                 return true;

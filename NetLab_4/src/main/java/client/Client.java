@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -120,11 +121,17 @@ public class Client {
                 }
             }
         }
-        catch(IOException e)
+        catch(ConnectException d)
         {
-            e.printStackTrace();
+            System.err.println("Connection error: the server is dead");
             System.exit(5);
         }
+        catch(IOException e)
+        {
+            System.err.println("Error");
+            System.exit(5);
+        }
+
     }
 
     static private String getStringFromStream(InputStream is)

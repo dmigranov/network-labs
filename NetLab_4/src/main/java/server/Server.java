@@ -15,7 +15,8 @@ public class Server {
         int port = Integer.parseInt(args[0]);
         Undertow server;
         List<User> users = new CopyOnWriteArrayList<>();
-        List<Message> messages = new CopyOnWriteArrayList<>();
+        //List<Message> messages = new CopyOnWriteArrayList<>();
+        Messages messages = new Messages();
         Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new RestHandler(users, messages));
 
         server = builder.build();

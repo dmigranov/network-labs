@@ -73,7 +73,10 @@ public class MessageRefresher implements Runnable {
                 currentMessageID += messagesAccepted;
                 is.close();
             }
-            catch(IOException e) {}
+            catch(IOException e) {
+                System.err.println("Error");
+                System.exit(5);
+            }
         }
     }
 
