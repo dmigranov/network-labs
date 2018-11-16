@@ -25,7 +25,8 @@ public class Server {
             } catch (InterruptedException e) {
             }
 
-            for (User user : users) {
+            for (int uid = 0; uid < users.size(); uid++) {
+                User user = users.get(uid);
                 if(user.incrementOnlineCounter() > 5 && user.isOnline()) {
                     user.setOnline(false);
                     messages.add(new Message(user.getUsername() + " left", -1));

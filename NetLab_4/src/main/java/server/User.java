@@ -1,8 +1,11 @@
 package server;
 
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+
 public class User {
-    private static int counter = 0;
-    private int id;
+
+    String token;
     private String username;
     private boolean isOnline = true; //мож потом понадобится
     private int onlineCounter = 0;
@@ -12,7 +15,8 @@ public class User {
     User(String username)
     {
         this.username = username;
-        id = counter++;
+        this.token = UUID.nameUUIDFromBytes(username.getBytes(StandardCharsets.UTF_8)).toString();
+
         //online = true;
         //token = UUID.randomUUID().toString();
     }
@@ -46,6 +50,10 @@ public class User {
 
     public void setOnline(boolean isOnline) {
         this.isOnline = isOnline;
+    }
+
+    public String getToken() {
+        return token;
     }
 }
 

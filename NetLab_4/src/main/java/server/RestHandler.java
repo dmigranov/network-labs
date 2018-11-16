@@ -50,12 +50,12 @@ public class RestHandler implements HttpHandler {
                         if (requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json")) {
                             reqObj = new JSONObject(body);
                             String username = reqObj.getString("username");
-                            if (!containsName(username)) {
+                            if (!users.containName(username)) {
                                 responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                                 User user = new User(username);
-                                users.add(user);
+                                int id = users.add(user);
                                 JSONObject respObject = new JSONObject();
-                                respObject.put("id", user.getId());
+                                respObject.put("id", id);
                                 respObject.put("username", username);
                                 respObject.put("online", user.isOnline());
                                 respObject.put("token", user.getToken());
@@ -80,7 +80,7 @@ public class RestHandler implements HttpHandler {
                             //String username;
                             //if ((username = deleteUserWithToken(authorizationHeader.get(0).substring(6))) != null)
                             //{
-                                User user = findUser(authorizationHeader.get(0).substring(6));
+                                User user = users.get(authorizationHeader.get(0).substring(6));
                                 responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                                 JSONObject respObject = new JSONObject();
                                 respObject.put("message", "bye!");
@@ -102,8 +102,8 @@ public class RestHandler implements HttpHandler {
                             reqObj = new JSONObject(body);
                             String messageText = reqObj.getString("message");
 
-                            int uid = findUser(token).getId();
-                            if(uid == -1)
+                            Integer uid = users.getIDByToken(token);
+                            if(uid == null)
                             {
                                 exchange.setStatusCode(403); //токен неизвестен серверу
                                 break;
@@ -136,9 +136,9 @@ public class RestHandler implements HttpHandler {
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                     {
                         String token = authorizationHeader.get(0).substring(6);
-                        User usr = findUser(token);
-                        int uid = usr != null?  usr.getId() : -1;
-                        if(uid == -1)
+                        Integer uid = users.getIDByToken(token);
+                        //int uid = usr != null ?  usr.getId() : -1;
+                        if(uid == null)
                         {
                             exchange.setStatusCode(403);
                         }
@@ -147,9 +147,10 @@ public class RestHandler implements HttpHandler {
                             responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                             JSONObject respObj = new JSONObject();
                             JSONArray respArr = new JSONArray();
-                            for (User user : users)
+                            for (uid = 0; uid < users.size(); uid++)
                             {
-                                respArr.put(new JSONObject().put("id", user.getId()).put("username", user.getUsername()).put("online", user.isOnline()));
+                                User user = users.get(uid);
+                                respArr.put(new JSONObject().put("id", uid).put("username", user.getUsername()).put("online", user.isOnline()));
                             }
                             respObj.put("users", respArr);
                             byte[] jsonBytes = respObj.toString().getBytes(StandardCharsets.UTF_8);
@@ -167,16 +168,16 @@ public class RestHandler implements HttpHandler {
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
                     {
                         String token = authorizationHeader.get(0).substring(6);
-                        User usr = findUser(token);
-                        int uid = usr != null?  usr.getId() : -1;
-                        if(uid == -1)
+
+                        Integer uid = users.getIDByToken(token);
+                        if(uid == null)
                         {
                             exchange.setStatusCode(403);
                         }
                         else {
                             responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                             uid = Integer.parseInt(path.substring(7));
-                            User user = findUserWithID(uid);
+                            User user = users.get(uid);
 
                             if(user == null)
                                 exchange.setStatusCode(404);
@@ -201,13 +202,13 @@ public class RestHandler implements HttpHandler {
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);
-                        User user = findUser(token);
-                        int uid = user != null?  user.getId() : -1;
-                        if(uid == -1)
+                        Integer uid = users.getIDByToken(token);
+                        if(uid == null)
                         {
                             exchange.setStatusCode(403);
                         }
                         else {
+                            User user = users.get(token);
                             if(user.isOnline() == false)
                             {
                                 user.setOnline(true);
@@ -251,7 +252,7 @@ public class RestHandler implements HttpHandler {
         }
     }
 
-    private User findUserWithID(int uid) {
+    /*private User findUserWithID(int uid) {
         for (User user : users)
         {
 
@@ -281,7 +282,7 @@ public class RestHandler implements HttpHandler {
             }
         }
         return null;
-    }
+    }*/
 }
 
 //httpexchange encapsulates a http request received and a response to be generated in one exchange
