@@ -22,8 +22,7 @@ public class RestHandler implements HttpHandler {
     //TODO: интерфейс для хранения юзеров и сообщений
     //TODO: разбить на паттерн фабрика и команда
 
-    RestHandler(Users users, Messages messages)
-    {
+    RestHandler(Users users, Messages messages) {
         this.users = users;
         this.messages = messages;
     }
@@ -41,8 +40,7 @@ public class RestHandler implements HttpHandler {
         String path = exchange.getRequestPath();
         ChannelOutputStream responseStream;
 
-        try (ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel()))
-        {
+        try (ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel())) {
             String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
             if (method.equals("POST")) {
                 switch (path) {
@@ -64,47 +62,41 @@ public class RestHandler implements HttpHandler {
                                 responseStream.write(jsonBytes);
                                 responseStream.close();
                                 messages.add(new Message(username + " joined in", -1));
-                            }
-                            else {
+                            } else {
                                 exchange.setStatusCode(401);
                                 responseHeaders.add(Headers.WWW_AUTHENTICATE, "Token realm = 'Username is already in use'");
                             }
-                        }
-                        else
+                        } else
                             exchange.setStatusCode(400);
                         break;
                     case "/logout":
                         HeaderValues authorizationHeader;
-                        if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
-                        {
+                        if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                             //String username;
                             //if ((username = deleteUserWithToken(authorizationHeader.get(0).substring(6))) != null)
                             //{
-                                User user = users.get(authorizationHeader.get(0).substring(6));
-                                responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
-                                JSONObject respObject = new JSONObject();
-                                respObject.put("message", "bye!");
-                                byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
-                                responseStream = new ChannelOutputStream(exchange.getResponseChannel());
-                                responseStream.write(jsonBytes);
-                                responseStream.close();
-                                user.setOnline(false);
-                                messages.add(new Message(user.getUsername() + " left", -1));
+                            User user = users.get(authorizationHeader.get(0).substring(6));
+                            responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
+                            JSONObject respObject = new JSONObject();
+                            respObject.put("message", "bye!");
+                            byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
+                            responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                            responseStream.write(jsonBytes);
+                            responseStream.close();
+                            user.setOnline(false);
+                            messages.add(new Message(user.getUsername() + " left", -1));
                             //}
-                        }
-                        else
+                        } else
                             exchange.setStatusCode(400);
                         break;
                     case "/messages":
-                        if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null && requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json"))
-                        {
+                        if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null && requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json")) {
                             String token = authorizationHeader.get(0).substring(6);
                             reqObj = new JSONObject(body);
                             String messageText = reqObj.getString("message");
 
                             Integer uid = users.getIDByToken(token);
-                            if(uid == null)
-                            {
+                            if (uid == null) {
                                 exchange.setStatusCode(403); //токен неизвестен серверу
                                 break;
                             }
@@ -117,8 +109,7 @@ public class RestHandler implements HttpHandler {
                             responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                             responseStream.write(jsonBytes);
                             responseStream.close();
-                        }
-                        else
+                        } else
                             exchange.setStatusCode(400);
                         break;
                     default:
@@ -126,29 +117,20 @@ public class RestHandler implements HttpHandler {
                         System.out.println(405);
                         break;
                 }
-            }
-
-            else if (method.equals("GET"))
-            {
-                if (path.equals("/users"))
-                {
+            } else if (method.equals("GET")) {
+                if (path.equals("/users")) {
                     HeaderValues authorizationHeader;
-                    if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
-                    {
+                    if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);
                         Integer uid = users.getIDByToken(token);
                         //int uid = usr != null ?  usr.getId() : -1;
-                        if(uid == null)
-                        {
+                        if (uid == null) {
                             exchange.setStatusCode(403);
-                        }
-                        else
-                        {
+                        } else {
                             responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                             JSONObject respObj = new JSONObject();
                             JSONArray respArr = new JSONArray();
-                            for (uid = 0; uid < users.size(); uid++)
-                            {
+                            for (uid = 0; uid < users.size(); uid++) {
                                 User user = users.get(uid);
                                 respArr.put(new JSONObject().put("id", uid).put("username", user.getUsername()).put("online", user.isOnline()));
                             }
@@ -158,28 +140,22 @@ public class RestHandler implements HttpHandler {
                             responseStream.write(jsonBytes);
                             responseStream.close();
                         }
-                    }
-                    else
+                    } else
                         exchange.setStatusCode(400);
-                }
-                else if (path.matches("/users/(.+)"))
-                {
+                } else if (path.matches("/users/(.+)")) {
                     HeaderValues authorizationHeader;
-                    if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null)
-                    {
+                    if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);
 
                         Integer uid = users.getIDByToken(token);
-                        if(uid == null)
-                        {
+                        if (uid == null) {
                             exchange.setStatusCode(403);
-                        }
-                        else {
+                        } else {
                             responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
                             uid = Integer.parseInt(path.substring(7));
                             User user = users.get(uid);
 
-                            if(user == null)
+                            if (user == null)
                                 exchange.setStatusCode(404);
                             else {
                                 JSONObject respObject = new JSONObject();
@@ -192,25 +168,19 @@ public class RestHandler implements HttpHandler {
                                 responseStream.close();
                             }
                         }
-                    }
-                    else
+                    } else
                         exchange.setStatusCode(400);
 
-                }
-                else if (path.equals("/messages"))
-                {
+                } else if (path.equals("/messages")) {
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);
                         Integer uid = users.getIDByToken(token);
-                        if(uid == null)
-                        {
+                        if (uid == null) {
                             exchange.setStatusCode(403);
-                        }
-                        else {
+                        } else {
                             User user = users.get(token);
-                            if(user.isOnline() == false)
-                            {
+                            if (user.isOnline() == false) {
                                 user.setOnline(true);
                                 messages.add(new Message(user.getUsername() + " returned", -1));
                             }
@@ -225,8 +195,7 @@ public class RestHandler implements HttpHandler {
                             JSONObject respObj = new JSONObject();
                             JSONArray respArr = new JSONArray();
 
-                            for(int id = offset; id < offset + subMessages.size(); id++)
-                            {
+                            for (int id = offset; id < offset + subMessages.size(); id++) {
                                 Message msg = messages.get(id);
                                 respArr.put(new JSONObject().put("id", id).put("message", msg.getMessage()).put("author", msg.getAuthorID()));
                             }
@@ -238,51 +207,15 @@ public class RestHandler implements HttpHandler {
                             responseStream.close();
                         }
                     }
-                }
-                else
-                {
+                } else {
                     exchange.setStatusCode(405);
                     System.out.println(405);
                 }
             }
-        }
-        catch(IOException e)
-        {
+        } catch (IOException e) {
             exchange.setStatusCode(500);
         }
     }
-
-    /*private User findUserWithID(int uid) {
-        for (User user : users)
-        {
-
-            if (user.getId() == uid)
-                return user;
-        }
-        return null;
-    }
-
-
-    private boolean containsName(String username) {
-        for (User user : users)
-        {
-            if (user.getUsername().equals(username))
-                return true;
-        }
-        return false;
-    }
-
-    private User findUser(String token)
-    {
-        for (User user : users)
-        {
-            if (user.getToken().equals(token)) {
-                user.setOnlineCounter(0);
-                return user;
-            }
-        }
-        return null;
-    }*/
 }
 
 //httpexchange encapsulates a http request received and a response to be generated in one exchange

@@ -16,9 +16,6 @@ public class User {
     {
         this.username = username;
         this.token = UUID.nameUUIDFromBytes(username.getBytes(StandardCharsets.UTF_8)).toString();
-
-        //online = true;
-        //token = UUID.randomUUID().toString();
     }
 
     public void setOnlineCounter(int onlineCounter) {
@@ -28,15 +25,6 @@ public class User {
     public String getUsername() {
         return username;
     }
-
-
-    /*public int getId() {
-        return id;
-    }
-
-    public String getToken() {
-        return token;
-    }*/
 
 
     public boolean isOnline() {
