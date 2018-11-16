@@ -14,16 +14,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class RestHandler implements HttpHandler {
-    private List<User> users;
+    private Users users;
     private Messages messages;
     //TODO: интерфейс для хранения юзеров и сообщений
     //TODO: разбить на паттерн фабрика и команда
 
-    RestHandler(List<User> users, Messages messages)
+    RestHandler(Users users, Messages messages)
     {
         this.users = users;
         this.messages = messages;

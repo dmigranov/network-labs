@@ -1,14 +1,12 @@
 package server;
 
-import java.util.UUID;
-
 public class User {
     private static int counter = 0;
     private int id;
     private String username;
     private boolean isOnline = true; //мож потом понадобится
     private int onlineCounter = 0;
-    private String token;
+
 
 
     User(String username)
@@ -16,7 +14,7 @@ public class User {
         this.username = username;
         id = counter++;
         //online = true;
-        token = UUID.randomUUID().toString();
+        //token = UUID.randomUUID().toString();
     }
 
     public void setOnlineCounter(int onlineCounter) {
@@ -28,13 +26,13 @@ public class User {
     }
 
 
-    public int getId() {
+    /*public int getId() {
         return id;
     }
 
     public String getToken() {
         return token;
-    }
+    }*/
 
 
     public boolean isOnline() {

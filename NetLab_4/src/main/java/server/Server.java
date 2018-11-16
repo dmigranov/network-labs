@@ -2,9 +2,6 @@ package server;
 
 import io.undertow.Undertow;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 public class Server {
     public static void main(String[] args)
     {
@@ -14,8 +11,8 @@ public class Server {
         }
         int port = Integer.parseInt(args[0]);
         Undertow server;
-        List<User> users = new CopyOnWriteArrayList<>();
-        //Users users = new Users(); //TODO
+        //List<User> users = new CopyOnWriteArrayList<>();
+        Users users = new Users(); //TODO
         Messages messages = new Messages();
         Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new RestHandler(users, messages));
 
