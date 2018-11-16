@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 public class RestHandler implements HttpHandler {
     private Users users;
     private Messages messages;
-    //TODO: интерфейс для хранения юзеров и сообщений
     //TODO: разбить на паттерн фабрика и команда
 
     RestHandler(Users users, Messages messages) {

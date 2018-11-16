@@ -14,7 +14,7 @@ public class Server {
         //List<User> users = new CopyOnWriteArrayList<>();
         Users users = new Users(); //TODO
         Messages messages = new Messages();
-        Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new RestHandler(users, messages));
+        Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new CoreHandler(users, messages));
 
         server = builder.build();
         server.start();
