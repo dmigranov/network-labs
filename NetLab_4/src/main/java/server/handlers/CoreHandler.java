@@ -24,7 +24,7 @@ public class CoreHandler implements HttpHandler
         factory.init(users, messages);
         String method = exchange.getRequestMethod().toString();
         String path = exchange.getRequestPath();
-        if ("POST/login".equals(method + path)) {
+        if ("POST/login".equals(method + path) || "POST/logout".equals(method + path)) {
             AbstractRestHandler handler = factory.getHandler(method + path);
             handler.handleRequest(exchange); //расскоментить когда готово
         }

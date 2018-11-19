@@ -48,6 +48,7 @@ public class RestHandler implements HttpHandler {
             if (method.equals("POST")) {
                 switch (path) {
                     case "/login":
+                        System.out.println("i'm here and i shouldn't");
                         if (requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json")) {
                             reqObj = new JSONObject(body);
                             String username = reqObj.getString("username");
