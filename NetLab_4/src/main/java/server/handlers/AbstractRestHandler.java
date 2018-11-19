@@ -9,7 +9,7 @@ public abstract class AbstractRestHandler implements HttpHandler {
     Messages messages;
 
 
-    AbstractRestHandler(Users users, Messages messages) {
+    public AbstractRestHandler(Users users, Messages messages) {
         this.users = users;
         this.messages = messages;
     }
