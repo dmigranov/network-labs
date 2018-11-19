@@ -30,7 +30,6 @@ public class CoreHandler implements HttpHandler
         }
         else {
             //System.out.println(method + path);
-            //todo: в фабрику передавать method + path, и в properties такие же!
             //todo: FactoryException catch
             HttpHandler rh = new RestHandler(users, messages);
             rh.handleRequest(exchange);

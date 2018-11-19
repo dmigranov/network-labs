@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 public class RestHandler implements HttpHandler {
     private Users users;
     private Messages messages;
-    //TODO: разбить на паттерн фабрика и команда
 
     public RestHandler(Users users, Messages messages) {
         this.users = users;
@@ -45,7 +44,7 @@ public class RestHandler implements HttpHandler {
 
         try (ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel())) {
             String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
-            if (method.equals("POST")) {
+            /*if (method.equals("POST")) {
                 switch (path) {
                     case "/login":
                         System.out.println("i'm here and i shouldn't");
@@ -121,7 +120,7 @@ public class RestHandler implements HttpHandler {
                         System.out.println(405);
                         break;
                 }
-            } else if (method.equals("GET")) {
+            } else */if (method.equals("GET")) {
                 if (path.equals("/users")) {
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
