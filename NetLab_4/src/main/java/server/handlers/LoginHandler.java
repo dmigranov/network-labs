@@ -29,29 +29,31 @@ public class LoginHandler extends AbstractRestHandler {
         try (ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel()))
         {
             String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
-                        if (requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json")) {
-                            JSONObject reqObj = new JSONObject(body);
-                            String username = reqObj.getString("username");
-                            if (!users.containName(username)) {
-                                responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
-                                User user = new User(username);
-                                int id = users.add(user);
-                                JSONObject respObject = new JSONObject();
-                                respObject.put("id", id);
-                                respObject.put("username", username);
-                                respObject.put("online", user.isOnline());
-                                respObject.put("token", user.getToken());
-                                byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
-                                responseStream = new ChannelOutputStream(exchange.getResponseChannel());
-                                responseStream.write(jsonBytes);
-                                responseStream.close();
-                                messages.add(new Message(username + " joined in", -1));
-                            } else {
-                                exchange.setStatusCode(401);
-                                responseHeaders.add(Headers.WWW_AUTHENTICATE, "Token realm = 'Username is already in use'");
-                            }
-                        } else
-                            exchange.setStatusCode(400);
+            if (requestHeaders.get(Headers.CONTENT_TYPE) != null && requestHeaders.get(Headers.CONTENT_TYPE).get(0).equals("application/json")) {
+                JSONObject reqObj = new JSONObject(body);
+                String username = reqObj.getString("username");
+                if (!users.containName(username)) {
+                    responseHeaders.add(Headers.CONTENT_TYPE, "application/json");
+                    User user = new User(username);
+                    int id = users.add(user);
+                    JSONObject respObject = new JSONObject();
+                    respObject.put("id", id);
+                    respObject.put("username", username);
+                    respObject.put("online", user.isOnline());
+                    respObject.put("token", user.getToken());
+                    byte[] jsonBytes = respObject.toString().getBytes(StandardCharsets.UTF_8);
+                    responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                    responseStream.write(jsonBytes);
+                    responseStream.close();
+                    messages.add(new Message(username + " joined in", -1));
+                }
+                else
+                {
+                    exchange.setStatusCode(401);
+                    responseHeaders.add(Headers.WWW_AUTHENTICATE, "Token realm = 'Username is already in use'");
+                }
+            }
+            else exchange.setStatusCode(400);
         }
     }
 }

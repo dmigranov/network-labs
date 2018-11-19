@@ -54,12 +54,10 @@ public class Factory
         if(c == null)
             throw new FactoryException("Handler doesn't exist");
         try {
-            //handler = (AbstractRestHandler) c.newInstance();
             handler = (AbstractRestHandler)c.getDeclaredConstructor(Users.class, Messages.class).newInstance(users, messages);
         }
         catch(IllegalAccessException | NoSuchMethodException | InstantiationException | InvocationTargetException e) {
             throw new FactoryException("IllegalAccessException or InstantiationException");
-            //throw new FactoryException(e.toString());
         }
 
         return handler;
