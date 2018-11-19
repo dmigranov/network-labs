@@ -24,6 +24,8 @@ public class RootHandler implements HttpHandler
         factory.init(users, messages);
         String method = exchange.getRequestMethod().toString();
         String path = exchange.getRequestPath();
+        if(path.matches("/users/(.+)"))
+            path = "/users/id";
         if ("POST".equals(method) || "GET/messages".equals(method + path)) {
             AbstractRestHandler handler = factory.getHandler(method + path);
             handler.handleRequest(exchange); //расскоментить когда готово
