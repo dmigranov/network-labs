@@ -21,6 +21,7 @@ public class CoreHandler implements HttpHandler
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         Factory factory = Factory.getInstance();
+        factory.init(users, messages);
         String method = exchange.getRequestMethod().toString();
         String path = exchange.getRequestPath();
         if ("POST/login".equals(method + path)) {

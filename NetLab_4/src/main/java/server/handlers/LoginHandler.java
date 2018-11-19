@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 public class LoginHandler extends AbstractRestHandler {
-    LoginHandler(Users users, Messages messages) {
+    public LoginHandler(Users users, Messages messages) {
         super(users, messages);
     }
 

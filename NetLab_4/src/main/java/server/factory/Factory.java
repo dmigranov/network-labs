@@ -1,9 +1,12 @@
 package server.factory;
 
+import server.Messages;
+import server.Users;
 import server.handlers.AbstractRestHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -12,6 +15,8 @@ public class Factory
 	private static TreeMap<String, Class> handlers = null;
     private static Factory instance;
 	private static Properties properties = null;
+	private static Users users;
+    private static Messages messages;
 	
 	private Factory() throws FactoryException
     {
@@ -49,10 +54,12 @@ public class Factory
         if(c == null)
             throw new FactoryException("Handler doesn't exist");
         try {
-            handler = (AbstractRestHandler) c.newInstance(); //а у нас то конструктор с параметрами!
+            //handler = (AbstractRestHandler) c.newInstance();
+            handler = (AbstractRestHandler)c.getDeclaredConstructor(Users.class, Messages.class).newInstance(users, messages);
         }
-        catch(IllegalAccessException | InstantiationException e) {
+        catch(IllegalAccessException | NoSuchMethodException | InstantiationException | InvocationTargetException e) {
             throw new FactoryException("IllegalAccessException or InstantiationException");
+            //throw new FactoryException(e.toString());
         }
 
         return handler;
@@ -72,5 +79,10 @@ public class Factory
             throw new FactoryException("There is no such class, check the properties file");
         }
 
+    }
+
+    public void init(Users users, Messages messages) {
+	    this.users = users;
+	    this.messages = messages;
     }
 }
