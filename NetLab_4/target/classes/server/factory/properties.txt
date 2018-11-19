@@ -1,1 +1,2 @@
 POST/login = server.handlers.LoginHandler
+POST/logout = server.handlers.LogoutHandler
