@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.xnio.streams.ChannelInputStream;
 import org.xnio.streams.ChannelOutputStream;
-import server.Message;
 import server.Messages;
 import server.User;
 import server.Users;
@@ -174,7 +173,8 @@ public class RestHandler implements HttpHandler {
                     } else
                         exchange.setStatusCode(400);
 
-                } else if (path.equals("/messages")) {
+                }
+                /*else if (path.equals("/messages")) {
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);
@@ -210,7 +210,8 @@ public class RestHandler implements HttpHandler {
                             responseStream.close();
                         }
                     }
-                } else {
+                }*/
+                else {
                     exchange.setStatusCode(405);
                     System.out.println(405);
                 }

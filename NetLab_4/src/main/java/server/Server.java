@@ -1,7 +1,7 @@
 package server;
 
 import io.undertow.Undertow;
-import server.handlers.CoreHandler;
+import server.handlers.RootHandler;
 
 public class Server {
     public static void main(String[] args)
@@ -15,7 +15,7 @@ public class Server {
         //List<User> users = new CopyOnWriteArrayList<>();
         Users users = new Users(); //TODO
         Messages messages = new Messages();
-        Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new CoreHandler(users, messages));
+        Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new RootHandler(users, messages));
 
         server = builder.build();
         server.start();
