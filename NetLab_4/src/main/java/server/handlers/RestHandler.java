@@ -1,4 +1,4 @@
-package server;
+package server.handlers;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -9,6 +9,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.xnio.streams.ChannelInputStream;
 import org.xnio.streams.ChannelOutputStream;
+import server.Message;
+import server.Messages;
+import server.User;
+import server.Users;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,7 +25,7 @@ public class RestHandler implements HttpHandler {
     private Messages messages;
     //TODO: разбить на паттерн фабрика и команда
 
-    RestHandler(Users users, Messages messages) {
+    public RestHandler(Users users, Messages messages) {
         this.users = users;
         this.messages = messages;
     }

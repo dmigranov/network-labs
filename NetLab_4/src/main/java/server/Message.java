@@ -6,7 +6,7 @@ public class Message {
     //private boolean isSystem;
 
 
-    Message(String message, int authorID)
+    public Message(String message, int authorID)
     {
         this.message = message;
         this.authorID = authorID;

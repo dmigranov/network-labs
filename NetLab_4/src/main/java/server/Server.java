@@ -1,6 +1,7 @@
 package server;
 
 import io.undertow.Undertow;
+import server.handlers.CoreHandler;
 
 public class Server {
     public static void main(String[] args)

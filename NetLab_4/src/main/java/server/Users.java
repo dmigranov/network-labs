@@ -6,11 +6,11 @@ import java.util.Map;
 public class Users{
     private int userCounter = 0;
 
-    Map<Integer, User> idUsers = new HashMap<>();
+    private Map<Integer, User> idUsers = new HashMap<>();
     //Map<String, User> tokenUsers = new HashMap<>();
 
 
-    int add(User user)
+    public int add(User user)
     {
         int currentCounter = userCounter++;
         idUsers.put(currentCounter, user);

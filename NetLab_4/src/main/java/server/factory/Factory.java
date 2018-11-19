@@ -1,6 +1,6 @@
 package server.factory;
 
-import server.AbstractRestHandler;
+import server.handlers.AbstractRestHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,12 +13,13 @@ public class Factory
     private static Factory instance;
 	private static Properties properties = null;
 	
-	private Factory() throws FactoryException //
+	private Factory() throws FactoryException
     {
-        handlers = new TreeMap<String, Class>();
+        handlers = new TreeMap<>();
         try {
             properties = new Properties();
             InputStream is = getClass().getResourceAsStream("properties.txt");
+            //InputStream is = Factory.class.getClassLoader().getResourceAsStream("properties.txt");
             if(is != null)
                 properties.load(is);
             else throw new IOException();
@@ -48,7 +49,7 @@ public class Factory
         if(c == null)
             throw new FactoryException("Handler doesn't exist");
         try {
-            handler = (AbstractRestHandler) c.newInstance();
+            handler = (AbstractRestHandler) c.newInstance(); //а у нас то конструктор с параметрами!
         }
         catch(IllegalAccessException | InstantiationException e) {
             throw new FactoryException("IllegalAccessException or InstantiationException");
@@ -72,12 +73,4 @@ public class Factory
         }
 
     }
-
-
-    /*private void fabric()
-    {
-        Reader reader = null;
-        reader = new InputStreamReader(Factory.class.getResourceAsStream("1.txt"));
-        System.out.println();
-    }*/
 }

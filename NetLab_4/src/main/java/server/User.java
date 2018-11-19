@@ -5,14 +5,14 @@ import java.util.UUID;
 
 public class User {
 
-    String token;
+    private String token;
     private String username;
     private boolean isOnline = true; //мож потом понадобится
     private int onlineCounter = 0;
 
 
 
-    User(String username)
+    public User(String username)
     {
         this.username = username;
         this.token = UUID.nameUUIDFromBytes(username.getBytes(StandardCharsets.UTF_8)).toString();
