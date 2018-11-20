@@ -5,7 +5,6 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.xnio.streams.ChannelInputStream;
 import org.xnio.streams.ChannelOutputStream;
@@ -120,7 +119,7 @@ public class RestHandler implements HttpHandler {
                         break;
                 }
             } else */if (method.equals("GET")) {
-                if (path.equals("/users")) {
+                /*if (path.equals("/users")) {
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);
@@ -144,7 +143,7 @@ public class RestHandler implements HttpHandler {
                         }
                     } else
                         exchange.setStatusCode(400);
-                } else if (path.matches("/users/(.+)")) {
+                } else */if (path.matches("/users/(.+)")) {
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);

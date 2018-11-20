@@ -96,7 +96,7 @@ public class Client {
                     else
                     {
                         System.err.println("No such command");
-                        break;
+                        //break;
                     }
                 }
                 else //post a message

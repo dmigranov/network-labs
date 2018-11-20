@@ -23,6 +23,10 @@ public class LoginHandler extends AbstractRestHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        if (exchange.isInIoThread()) {
+            exchange.dispatch(this);
+            return;
+        }
         HeaderMap requestHeaders = exchange.getRequestHeaders();
         HeaderMap responseHeaders = exchange.getResponseHeaders();
         ChannelOutputStream responseStream;

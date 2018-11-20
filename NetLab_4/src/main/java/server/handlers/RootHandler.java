@@ -5,6 +5,7 @@ import io.undertow.server.HttpServerExchange;
 import server.Messages;
 import server.Users;
 import server.factory.Factory;
+import server.factory.FactoryException;
 
 public class RootHandler implements HttpHandler
 {
@@ -26,15 +27,20 @@ public class RootHandler implements HttpHandler
         String path = exchange.getRequestPath();
         if(path.matches("/users/(.+)"))
             path = "/users/id";
-        if ("POST".equals(method) || "GET/messages".equals(method + path)) {
+        try {
             AbstractRestHandler handler = factory.getHandler(method + path);
-            handler.handleRequest(exchange); //расскоментить когда готово
+            handler.handleRequest(exchange);
         }
-        else {
+        catch (FactoryException e)
+        {
+            exchange.setStatusCode(500);
+        }
+
+
+
             //System.out.println(method + path);
-            //todo: FactoryException catch
-            HttpHandler rh = new RestHandler(users, messages);
-            rh.handleRequest(exchange);
-        }
+            /*HttpHandler rh = new RestHandler(users, messages);
+            rh.handleRequest(exchange);*/
+
     }
 }

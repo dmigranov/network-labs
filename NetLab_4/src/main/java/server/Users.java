@@ -34,9 +34,11 @@ public class Users{
         for (int i = 0; i < idUsers.size(); i++)
         {
             User user = idUsers.get(i);
-            user.setOnlineCounter(0);
-            if (token.equals(user.getToken()))
+
+            if (token.equals(user.getToken())) {
+                user.setOnlineCounter(0);
                 return user;
+            }
         }
         return null;
     }
