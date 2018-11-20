@@ -7,17 +7,12 @@ public class Users{
     private int userCounter = 0;
 
     private Map<Integer, User> idUsers = new HashMap<>();
-    //Map<String, User> tokenUsers = new HashMap<>();
-
 
     public int add(User user)
     {
         int currentCounter = userCounter++;
         idUsers.put(currentCounter, user);
-        //String token = UUID.nameUUIDFromBytes(user.getUsername().getBytes(StandardCharsets.UTF_8)).toString();
 
-                //fromString(user.getUsername()).toString();
-        //tokenUsers.put(token, user);
         return currentCounter;
     }
 

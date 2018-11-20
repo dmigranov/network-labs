@@ -43,7 +43,7 @@ public class PostMessageHandler extends AbstractRestHandler {
                 }
                 else {
                     JSONObject reqObj = new JSONObject(body);
-                    reqObj = new JSONObject(body);
+//                  reqObj = new JSONObject(body);
                     String messageText = reqObj.getString("message");
 
                     responseHeaders.add(Headers.CONTENT_TYPE, "application/json");

@@ -3,20 +3,10 @@ package server.handlers;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
-import io.undertow.util.HeaderValues;
-import io.undertow.util.Headers;
 import org.json.JSONObject;
-import org.xnio.streams.ChannelInputStream;
 import org.xnio.streams.ChannelOutputStream;
 import server.Messages;
-import server.User;
 import server.Users;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 
 public class RestHandler implements HttpHandler {
     private Users users;
@@ -40,9 +30,9 @@ public class RestHandler implements HttpHandler {
         String path = exchange.getRequestPath();
         ChannelOutputStream responseStream;
 
-        try (ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel())) {
+        /*try (ChannelInputStream bodyStream = new ChannelInputStream(exchange.getRequestChannel())) {
             String body = new BufferedReader(new InputStreamReader(bodyStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
-            /*if (method.equals("POST")) {
+            if (method.equals("POST")) {
                 switch (path) {
                     case "/login":
                         System.out.println("i'm here and i shouldn't");
@@ -118,8 +108,8 @@ public class RestHandler implements HttpHandler {
                         System.out.println(405);
                         break;
                 }
-            } else */if (method.equals("GET")) {
-                /*if (path.equals("/users")) {
+            } else if (method.equals("GET")) {
+                if (path.equals("/users")) {
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);
@@ -143,7 +133,7 @@ public class RestHandler implements HttpHandler {
                         }
                     } else
                         exchange.setStatusCode(400);
-                } else */if (path.matches("/users/(.+)")) {
+                } else if (path.matches("/users/(.+)")) {
                     HeaderValues authorizationHeader;
                     if ((authorizationHeader = requestHeaders.get(Headers.AUTHORIZATION)) != null) {
                         String token = authorizationHeader.get(0).substring(6);
@@ -209,7 +199,7 @@ public class RestHandler implements HttpHandler {
                             responseStream.close();
                         }
                     }
-                }*/
+                }
                 else {
                     exchange.setStatusCode(405);
                     System.out.println(405);
@@ -217,7 +207,7 @@ public class RestHandler implements HttpHandler {
             }
         } catch (IOException e) {
             exchange.setStatusCode(500);
-        }
+        }*/
     }
 }
 

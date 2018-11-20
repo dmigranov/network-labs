@@ -36,11 +36,5 @@ public class RootHandler implements HttpHandler
             exchange.setStatusCode(500);
         }
 
-
-
-            //System.out.println(method + path);
-            /*HttpHandler rh = new RestHandler(users, messages);
-            rh.handleRequest(exchange);*/
-
     }
 }

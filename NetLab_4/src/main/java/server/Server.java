@@ -12,7 +12,6 @@ public class Server {
         }
         int port = Integer.parseInt(args[0]);
         Undertow server;
-        //List<User> users = new CopyOnWriteArrayList<>();
         Users users = new Users(); //TODO
         Messages messages = new Messages();
         Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").setHandler(new RootHandler(users, messages));
@@ -23,8 +22,8 @@ public class Server {
         while(true) {
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException e) {
             }
+            catch (InterruptedException e) {}
 
             for (int uid = 0; uid < users.size(); uid++) {
                 User user = users.get(uid);
