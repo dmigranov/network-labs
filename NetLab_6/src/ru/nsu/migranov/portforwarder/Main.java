@@ -15,7 +15,7 @@ public class Main {
         InetAddress rhost = null;
         try
         {
-            rhost = InetAddress.getByName(args[1]);
+            rhost = InetAddress.getByName(args[1]); //надо зарезолвить
         }
         catch(java.net.UnknownHostException e)
         {
