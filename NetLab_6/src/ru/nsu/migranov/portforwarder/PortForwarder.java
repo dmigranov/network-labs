@@ -36,6 +36,7 @@ public class PortForwarder {
 
             while(true)
             {
+                buf.clear();
                 selector.select(); //возвращает только если хотя бы один channel выбран
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iter = selectedKeys.iterator();
@@ -48,8 +49,7 @@ public class PortForwarder {
 
                         client.configureBlocking(false);
                         client.register(selector, SelectionKey.OP_READ); //READ? WRITE
-                        //TODO: при подключении клиента сервер открывает соединение с rhost : rport
-                        SocketChannel remote = SocketChannel.open();
+                        /*SocketChannel remote = SocketChannel.open();
                         remote.configureBlocking(false);
                         if(!remote.connect(serverAddress)) {
                             remote.register(selector, SelectionKey.OP_CONNECT);
@@ -57,20 +57,24 @@ public class PortForwarder {
                         else {
                             remote.register(selector, SelectionKey.OP_READ); //я не регистрирую на Write т.к. на write доступен почти всегда; по требованию!
                             //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
-                        }
+                        }*/
                     }
 
                     if(key.isReadable())
                     {
                         SocketChannel keyChannel = (SocketChannel)key.channel(); //не обязательно наш клиент, целевой сервер тоже может
-                        keyChannel.read(buf);
+                        if(keyChannel.read(buf) == -1) {
+                            keyChannel.close();
+                            continue;
+                        }
+
                         System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         //if(если от сервера передать клиенту)
                         //если от клиента передать серверу
                         System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
                     }
 
-                    /f(key.isConnectable())
+                    /*if(key.isConnectable())
                     {
                         //stackoverflow java solaris nio op_connect problem
                         SocketChannel remote = (SocketChannel)key.channel();
@@ -81,7 +85,7 @@ public class PortForwarder {
                             //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                         }
                         continue; //не делаю ремув ь.к поменял
-                    }
+                    }*/
 
                     //
 
@@ -92,7 +96,8 @@ public class PortForwarder {
         }
         catch(IOException e)
         {
-            System.err.println("IOException!");
+            //System.err.println("IOException!");
+            e.printStackTrace();
             System.exit(2);
         }
 
