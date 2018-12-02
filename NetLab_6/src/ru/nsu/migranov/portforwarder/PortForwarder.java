@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -37,7 +38,36 @@ public class PortForwarder {
                 Iterator<SelectionKey> iter = selectedKeys.iterator();
                 while(iter.hasNext())
                 {
-                    System.out.println("HERE");
+
+                    SelectionKey key = iter.next();
+
+                    if(key.isAcceptable())
+                    {
+                        SocketChannel client = ssc.accept();
+                        //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
+                        client.configureBlocking(false);
+                        client.register(selector, SelectionKey.OP_READ); //READ? WRITE
+
+                        //при подключении клиента сервер открывает соединение с rhost : rport
+                    }
+
+                    if(key.isAcceptable())
+                    {
+                        SocketChannel client = ssc.accept();
+                        //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
+                        client.configureBlocking(false);
+                        client.register(selector, SelectionKey.OP_READ); //READ? WRITE
+
+                        //при подключении клиента сервер открывает соединение с rhost : rport
+                    }
+                    if(key.isReadable())
+                    {
+
+                    }
+
+                    //
+
+                    iter.remove();
                 }
             }
 
