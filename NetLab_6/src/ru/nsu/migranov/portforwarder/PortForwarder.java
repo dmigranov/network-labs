@@ -3,7 +3,6 @@ package ru.nsu.migranov.portforwarder;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -27,12 +26,12 @@ public class PortForwarder {
     public void run()
     {
         try(Selector selector = Selector.open();
-            ServerSocketChannel forwarder = ServerSocketChannel.open();
-            SocketChannel serverChannel = SocketChannel.open())
+            ServerSocketChannel local = ServerSocketChannel.open();
+           )
         {
-            forwarder.bind(new InetSocketAddress("localhost", lport)); //название протокола?
-            forwarder.configureBlocking(false);
-            forwarder.register(selector, SelectionKey.OP_ACCEPT);
+            local.bind(new InetSocketAddress("localhost", lport)); //название протокола?
+            local.configureBlocking(false);
+            local.register(selector, SelectionKey.OP_ACCEPT);
             ByteBuffer buf = ByteBuffer.allocate(1024);
 
             while(true)
@@ -42,24 +41,46 @@ public class PortForwarder {
                 Iterator<SelectionKey> iter = selectedKeys.iterator();
                 while(iter.hasNext())
                 {
-                    //System.out.println("HERE");
                     SelectionKey key = iter.next();
-
                     if(key.isAcceptable())
                     {
-                        SocketChannel client = forwarder.accept();
-                        //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
+                        SocketChannel client = local.accept();
+
                         client.configureBlocking(false);
                         client.register(selector, SelectionKey.OP_READ); //READ? WRITE
-                        //при подключении клиента сервер открывает соединение с rhost : rport
+                        //TODO: при подключении клиента сервер открывает соединение с rhost : rport
+                        SocketChannel remote = SocketChannel.open();
+                        remote.configureBlocking(false);
+                        if(!remote.connect(serverAddress)) {
+                            remote.register(selector, SelectionKey.OP_CONNECT);
+                        }
+                        else {
+                            remote.register(selector, SelectionKey.OP_READ); //я не регистрирую на Write т.к. на write доступен почти всегда; по требованию!
+                            //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
+                        }
                     }
 
                     if(key.isReadable())
                     {
-                        SocketChannel sender = (SocketChannel)key.channel(); //не обязательно наш клиент, целевой сервер тоже может
-                        sender.read(buf);
+                        SocketChannel keyChannel = (SocketChannel)key.channel(); //не обязательно наш клиент, целевой сервер тоже может
+                        keyChannel.read(buf);
+                        System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
+                        //if(если от сервера передать клиенту)
+                        //если от клиента передать серверу
                         System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
-                        //SelectionKey receiverKey = forwarder.regis
+                    }
+
+                    /f(key.isConnectable())
+                    {
+                        //stackoverflow java solaris nio op_connect problem
+                        SocketChannel remote = (SocketChannel)key.channel();
+                        if(remote.finishConnect())
+                        {
+                            //remote.getRemoteAddress() - адрес сервера если чё
+                            key.interestOps(SelectionKey.OP_READ); //READ WRITE?
+                            //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
+                        }
+                        continue; //не делаю ремув ь.к поменял
                     }
 
                     //
