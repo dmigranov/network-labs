@@ -17,7 +17,7 @@ public class PortForwarder {
     //private InetAddress rhost;
     //private int rport;
     private InetSocketAddress serverAddress;
-    public PortForwarder(int lport, InetAddress rhost, int rport) {
+    PortForwarder(int lport, InetAddress rhost, int rport) {
         this.lport = lport;
         serverAddress = new InetSocketAddress(rhost, rport);
     }
@@ -67,7 +67,7 @@ public class PortForwarder {
                             keyChannel.close();
                             continue;
                         }
-
+                        //пока не знаю как буду узнвавать, кому перенаправлять, но если что можно прикрепить объект к ключу
                         System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         //if(если от сервера передать клиенту)
                         //если от клиента передать серверу
