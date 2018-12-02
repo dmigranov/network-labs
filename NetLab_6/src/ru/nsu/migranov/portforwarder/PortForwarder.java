@@ -46,24 +46,12 @@ public class PortForwarder {
                         SocketChannel client = ssc.accept();
                         //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
                         client.configureBlocking(false);
-                        client.register(selector, SelectionKey.OP_READ); //READ? WRITE
+                        client.register(selector, SelectionKey.OP_READ & SelectionKey.OP_WRITE); //READ? WRITE
 
                         //при подключении клиента сервер открывает соединение с rhost : rport
                     }
 
-                    if(key.isAcceptable())
-                    {
-                        SocketChannel client = ssc.accept();
-                        //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
-                        client.configureBlocking(false);
-                        client.register(selector, SelectionKey.OP_READ); //READ? WRITE
-
-                        //при подключении клиента сервер открывает соединение с rhost : rport
-                    }
                     if(key.isReadable())
-                    {
-
-                    }
 
                     //
 
