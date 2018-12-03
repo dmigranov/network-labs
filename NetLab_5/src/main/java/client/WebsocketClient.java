@@ -20,4 +20,10 @@ public class WebsocketClient
         System.out.println("WEBSOCKET OPENED");
         this.session = session;
     }
+
+    @OnMessage
+    public void onMessage(Session session, String s)
+    {
+        System.out.println(s);
+    }
 }
