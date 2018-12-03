@@ -17,7 +17,7 @@ public class Server {
         Users users = new Users();
         Messages messages = new Messages();
         Undertow.Builder builder = Undertow.builder().addHttpListener(port, "localhost").
-                setHandler(Handlers.path().addExactPath("/messages", Handlers.websocket(new WebsocketGetMessagesHandler()))).
+                setHandler(Handlers.path().addExactPath("/messages_ws", Handlers.websocket(new WebsocketGetMessagesHandler()))).
                 setHandler(new RootHandler(users, messages));
 
         server = builder.build();
