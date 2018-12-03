@@ -62,7 +62,7 @@ public class Client {
                 System.out.println("Your token and id are: " + token + " and " + uid + ". Please remember them to be able to re-login");
             }
             new Thread(new MessageRefresher(args[0], token, uid, users)).start();
-
+            new Thread(new MessageGetter(args[0], token, uid, users)).start();
             String str;
             while((str = br.readLine()) != null)
             {
