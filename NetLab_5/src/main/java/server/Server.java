@@ -1,9 +1,7 @@
 package server;
 
-import io.undertow.Handlers;
 import io.undertow.Undertow;
 import server.handlers.RootHandler;
-import server.handlers.WebsocketGetMessagesHandler;
 
 public class Server {
     public static void main(String[] args)

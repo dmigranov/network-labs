@@ -12,6 +12,6 @@ public class WebsocketGetMessagesHandler extends AbstractRestHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        Handlers.websocket(new WebsocketGetMessagesCallback()).handleRequest(exchange);
+        Handlers.websocket(new WebsocketGetMessagesCallback(users, messages)).handleRequest(exchange);
     }
 }

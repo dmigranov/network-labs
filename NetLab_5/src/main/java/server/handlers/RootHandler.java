@@ -27,10 +27,10 @@ public class RootHandler implements HttpHandler
         String method = exchange.getRequestMethod().toString();
         String path = exchange.getRequestPath();
 
-        if (path.equals("/messages_ws"))
-            Handlers.websocket(new WebsocketGetMessagesHandler()).handleRequest(exchange); //порнография конечно
+        /*if (path.equals("/messages_ws"))
+            Handlers.websocket(new WebsocketGetMessagesCallback()).handleRequest(exchange); //порнография конечно
 
-        else {
+        else */{
             if (path.matches("/users/(.+)"))
                 path = "/users/id";
             try {
