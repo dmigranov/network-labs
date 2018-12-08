@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class PortForwarder {
     private int lport;
-    private InetSocketAddress serverAddress;
+    private SocketAddress serverAddress;
     private Map<SocketAddress, SocketChannel> users = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до сервера
 
     PortForwarder(int lport, InetAddress rhost, int rport) {
@@ -67,12 +67,11 @@ public class PortForwarder {
                         }
                         //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                         //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
-                        //clientKey.attach(remote);
                         users.put(client.getRemoteAddress(), remote);
 
                     }
 
-                    if(key.isReadable())
+                    else if(key.isReadable())
                     {
                         SocketChannel keyChannel = (SocketChannel)key.channel();
                          //не обязательно наш клиент, целевой сервер тоже может
@@ -86,13 +85,20 @@ public class PortForwarder {
                         //if(если от сервера передать клиенту)
                         //если от клиента передать серверу
                         System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
-                        SocketChannel remote = (SocketChannel)key.attachment();
+                        SocketChannel remote = users.get(keyChannel.getRemoteAddress());
+                        if(remote.getRemoteAddress().equals(serverAddress))
+                        {
+                            //клиент пишет на сервер
+                            if(remote.isConnected())
+                                ;
+                            else
+                                remote.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT, buf);
+                        }
 
-                        //remote.write(buf);
 
                     }
 
-                    if(key.isConnectable())
+                    else if(key.isConnectable())
                     {
                         //stackoverflow java solaris nio op_connect problem
                         SocketChannel keyChannel = (SocketChannel)key.channel();
@@ -109,6 +115,7 @@ public class PortForwarder {
                             continue; //не делаю ремув ь.к поменял
                         }
                     }
+                    //else if(key.isWritable())
 
                     //
 
