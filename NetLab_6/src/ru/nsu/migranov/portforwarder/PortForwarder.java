@@ -91,8 +91,9 @@ public class PortForwarder {
                             //клиент пишет на сервер
                             if(remote.isConnected())
                                 ;
-                            else
+                            else {
                                 remote.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT, buf);
+                            }
                         }
 
 
