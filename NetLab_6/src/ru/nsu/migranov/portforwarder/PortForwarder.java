@@ -3,6 +3,7 @@ package ru.nsu.migranov.portforwarder;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -16,10 +17,8 @@ import java.util.Set;
 
 public class PortForwarder {
     private int lport;
-    //private InetAddress rhost;
-    //private int rport;
     private InetSocketAddress serverAddress;
-    private Map<Integer, SocketChannel> users = new HashMap<>(); //мапа порт куда подключились - сокетченнел
+    private Map<SocketAddress, SocketChannel> users = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до сервера
 
     PortForwarder(int lport, InetAddress rhost, int rport) {
         this.lport = lport;
@@ -56,14 +55,20 @@ public class PortForwarder {
                         client.configureBlocking(false);
                         SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ); //READ? WRITE
                         SocketChannel remote = SocketChannel.open();
+
+
                         remote.configureBlocking(false);
                         if(!remote.connect(serverAddress)) {
                             remote.register(selector, SelectionKey.OP_CONNECT);
                         }
                         else {
                             remote.register(selector, SelectionKey.OP_READ); //я не регистрирую на Write т.к. на write доступен почти всегда; по требованию!
+                            //users.put()
                         }
-                        clientKey.attach(remote);
+                        //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
+                        //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
+                        //clientKey.attach(remote);
+                        users.put(client.getRemoteAddress(), remote);
 
                     }
 
