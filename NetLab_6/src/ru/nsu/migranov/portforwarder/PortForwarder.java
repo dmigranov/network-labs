@@ -89,11 +89,15 @@ public class PortForwarder {
                         if(remote.getRemoteAddress().equals(serverAddress))
                         {
                             //клиент пишет на сервер
-                            if(remote.isConnected())
-                                ;
-                            else {
-                                remote.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT, buf);
+                            if(remote.isConnected()) {
+                                System.out.println("COUNT: " + remote.write(buf));//проверка что не все записало
+                                remote.register(selector, SelectionKey.OP_READ, buf);
                             }
+                            else {
+                                System.out.println("NOT CONNECTED YET");
+                                remote.register(selector, SelectionKey.OP_CONNECT, buf);
+                            }
+
                         }
 
 
@@ -110,13 +114,19 @@ public class PortForwarder {
                         else {
                             if (keyChannel.finishConnect()) {
                                 //remote.getRemoteAddress() - адрес сервера если чё
-                                key.interestOps(SelectionKey.OP_READ); //READ WRITE?
+                                key.interestOps(SelectionKey.OP_WRITE); //READ WRITE?
                                 System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                             }
                             continue; //не делаю ремув ь.к поменял
                         }
                     }
-                    //else if(key.isWritable())
+                    else if(key.isWritable())
+                    {
+                        ByteBuffer toWrite = (ByteBuffer)key.attachment();
+                        SocketChannel keyChannel = (SocketChannel)key.channel();
+                        keyChannel.write(toWrite); //проверка на то что не все
+                        key.interestOps(SelectionKey.OP_READ);
+                    }
 
                     //
 
