@@ -9,6 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,7 +19,9 @@ import java.util.Set;
 public class PortForwarder {
     private int lport;
     private SocketAddress serverAddress;
-    private Map<SocketAddress, SocketChannel> users = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до сервера
+    private Map<SocketAddress, SocketChannel> usersServer = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до сервера
+    private Map<SocketAddress, SocketChannel> usersUs = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до юзера
+
 
     PortForwarder(int lport, InetAddress rhost, int rport) {
         this.lport = lport;
@@ -67,7 +70,8 @@ public class PortForwarder {
                         }
                         //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                         //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
-                        users.put(client.getRemoteAddress(), remote);
+                        usersServer.put(client.getRemoteAddress(), remote);
+                        usersUs.put(client.getRemoteAddress(), client);
 
                     }
 
@@ -82,24 +86,36 @@ public class PortForwarder {
 
                         //пока не знаю как буду узнвавать, кому перенаправлять, но если что можно прикрепить объект к ключу
                         //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
-                        //if(если от сервера передать клиенту)
-                        //если от клиента передать серверу
                         System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
-                        SocketChannel remote = users.get(keyChannel.getRemoteAddress());
-                        if(remote.getRemoteAddress().equals(serverAddress))
+                        //System.out.println("GOT MESSAGE");
+                        SocketChannel remote = usersServer.get(keyChannel.getRemoteAddress());
+
+                        //
+                        if(remote != null && remote.getRemoteAddress().equals(serverAddress))
                         {
+                            System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                             //клиент пишет на сервер
                             if(remote.isConnected()) {
-                                System.out.println("COUNT: " + remote.write(buf));//проверка что не все записало
-                                remote.register(selector, SelectionKey.OP_READ, buf);
+                                System.out.println("COUNT: " + remote.write(buf));//проверка что не все записало; если не все то write
+                                remote.register(selector, SelectionKey.OP_READ, null);
                             }
                             else {
-                                System.out.println("NOT CONNECTED YET");
+                                //System.out.println("NOT CONNECTED YET");
                                 remote.register(selector, SelectionKey.OP_CONNECT, buf);
                             }
+                        }
+                        else
+                        {
+                            //сервер отвечает клиенту
+                            System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
+                            remote = findUserSocketChannel(keyChannel.getLocalAddress());
+
+                            buf.flip();
+                            remote.write(buf);//проверка что не все записало; если не все то write
+                            remote.register(selector, SelectionKey.OP_READ, null);
+                            //remote.close(); //!!!!!!!
 
                         }
-
 
                     }
 
@@ -109,7 +125,7 @@ public class PortForwarder {
                         SocketChannel keyChannel = (SocketChannel)key.channel();
                         if(keyChannel.isConnected())
                         {
-                            keyChannel.close();
+                            //keyChannel.close();
                         }
                         else {
                             if (keyChannel.finishConnect()) {
@@ -124,7 +140,8 @@ public class PortForwarder {
                     {
                         ByteBuffer toWrite = (ByteBuffer)key.attachment();
                         SocketChannel keyChannel = (SocketChannel)key.channel();
-                        keyChannel.write(toWrite); //проверка на то что не все
+                        if(toWrite != null) //!!!
+                            keyChannel.write(toWrite); //проверка на то что не все
                         key.interestOps(SelectionKey.OP_READ);
                     }
 
@@ -146,6 +163,19 @@ public class PortForwarder {
 
     private void readData(SelectionKey key, ByteBuffer buf) throws IOException
     {
+    }
+
+    private SocketChannel findUserSocketChannel(SocketAddress serverSocketAddress) throws IOException
+    {
+        for(Map.Entry<SocketAddress, SocketChannel> entry: usersServer.entrySet())
+        {
+            if (entry.getValue().isConnected() && entry.getValue().getLocalAddress().equals(serverSocketAddress))
+            {
+                System.out.println("HELLO");
+                return usersUs.get(entry.getKey());
+            }
+        }
+        return null;
     }
 
 }
