@@ -63,11 +63,10 @@ public class PortForwarder {
                         }
                         else {
                             remote.register(selector, SelectionKey.OP_READ); //я не регистрирую на Write т.к. на write доступен почти всегда; по требованию!
-                            //users.put()
+                            System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                         }
                         //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                         //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
-                        //clientKey.attach(remote);
                         users.put(client.getRemoteAddress(), remote);
 
                     }
@@ -80,15 +79,16 @@ public class PortForwarder {
                             keyChannel.close();
                             continue;
                         }
-
                         //пока не знаю как буду узнвавать, кому перенаправлять, но если что можно прикрепить объект к ключу
-                        //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         //if(если от сервера передать клиенту)
                         //если от клиента передать серверу
-                        System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
-                        SocketChannel remote = (SocketChannel)key.attachment();
+                        //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
+                        //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
+                        SocketChannel remote = users.get(keyChannel.getRemoteAddress());
 
-                        //remote.write(buf);
+                        SelectionKey remoteKey = remote.register(selector, SelectionKey.OP_WRITE);
+                        remoteKey.attach(buf);
+
 
                     }
 
@@ -110,6 +110,12 @@ public class PortForwarder {
                         }
                     }
 
+                    if(key.isWritable())
+                    {
+                        System.out.println("HERE");
+                        SocketChannel keyChannel = (SocketChannel)key.channel();
+                        keyChannel.write((ByteBuffer)key.attachment());
+                    }
                     //
 
                     iter.remove();
@@ -119,13 +125,11 @@ public class PortForwarder {
         }
         catch(IOException e)
         {
-            //System.err.println("IOException!");
             e.printStackTrace();
             System.exit(2);
         }
 
     }
-
     private void readData(SelectionKey key, ByteBuffer buf) throws IOException
     {
     }
