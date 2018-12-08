@@ -9,7 +9,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 public class PortForwarder {
@@ -17,6 +19,8 @@ public class PortForwarder {
     //private InetAddress rhost;
     //private int rport;
     private InetSocketAddress serverAddress;
+    private Map<Integer, SocketChannel> users = new HashMap<>(); //мапа порт куда подключились - сокетченнел
+
     PortForwarder(int lport, InetAddress rhost, int rport) {
         this.lport = lport;
         serverAddress = new InetSocketAddress(rhost, rport);
@@ -40,52 +44,66 @@ public class PortForwarder {
                 selector.select(); //возвращает только если хотя бы один channel выбран
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iter = selectedKeys.iterator();
+
                 while(iter.hasNext())
                 {
                     SelectionKey key = iter.next();
+
                     if(key.isAcceptable())
                     {
                         SocketChannel client = local.accept();
 
                         client.configureBlocking(false);
-                        client.register(selector, SelectionKey.OP_READ); //READ? WRITE
-                        /*SocketChannel remote = SocketChannel.open();
+                        SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ); //READ? WRITE
+                        SocketChannel remote = SocketChannel.open();
                         remote.configureBlocking(false);
                         if(!remote.connect(serverAddress)) {
                             remote.register(selector, SelectionKey.OP_CONNECT);
                         }
                         else {
                             remote.register(selector, SelectionKey.OP_READ); //я не регистрирую на Write т.к. на write доступен почти всегда; по требованию!
-                            //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
-                        }*/
+                        }
+                        clientKey.attach(remote);
+
                     }
 
                     if(key.isReadable())
                     {
-                        SocketChannel keyChannel = (SocketChannel)key.channel(); //не обязательно наш клиент, целевой сервер тоже может
+                        SocketChannel keyChannel = (SocketChannel)key.channel();
+                         //не обязательно наш клиент, целевой сервер тоже может
                         if(keyChannel.read(buf) == -1) {
                             keyChannel.close();
                             continue;
                         }
+
                         //пока не знаю как буду узнвавать, кому перенаправлять, но если что можно прикрепить объект к ключу
-                        System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
+                        //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         //if(если от сервера передать клиенту)
                         //если от клиента передать серверу
                         System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
+                        SocketChannel remote = (SocketChannel)key.attachment();
+
+                        //remote.write(buf);
+
                     }
 
-                    /*if(key.isConnectable())
+                    if(key.isConnectable())
                     {
                         //stackoverflow java solaris nio op_connect problem
-                        SocketChannel remote = (SocketChannel)key.channel();
-                        if(remote.finishConnect())
+                        SocketChannel keyChannel = (SocketChannel)key.channel();
+                        if(keyChannel.isConnected())
                         {
-                            //remote.getRemoteAddress() - адрес сервера если чё
-                            key.interestOps(SelectionKey.OP_READ); //READ WRITE?
-                            //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
+                            keyChannel.close();
                         }
-                        continue; //не делаю ремув ь.к поменял
-                    }*/
+                        else {
+                            if (keyChannel.finishConnect()) {
+                                //remote.getRemoteAddress() - адрес сервера если чё
+                                key.interestOps(SelectionKey.OP_READ); //READ WRITE?
+                                System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
+                            }
+                            continue; //не делаю ремув ь.к поменял
+                        }
+                    }
 
                     //
 
