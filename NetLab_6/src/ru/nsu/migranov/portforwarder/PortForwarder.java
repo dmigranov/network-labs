@@ -59,7 +59,6 @@ public class PortForwarder {
                         SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ); //READ? WRITE
                         SocketChannel remote = SocketChannel.open();
 
-
                         remote.configureBlocking(false);
                         if(!remote.connect(serverAddress)) {
                             remote.register(selector, SelectionKey.OP_CONNECT);
@@ -73,7 +72,6 @@ public class PortForwarder {
                         usersServer.put(client.getRemoteAddress(), remote);
                         usersUs.put(client.getRemoteAddress(), client);
                     }
-
                     else if(key.isReadable())
                     {
                         SocketChannel keyChannel = (SocketChannel)key.channel();
@@ -81,13 +79,9 @@ public class PortForwarder {
                             keyChannel.close();
                             continue;
                         }
-
-                        //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
-                        //System.out.println("GOT MESSAGE");
                         SocketChannel remote = usersServer.get(keyChannel.getRemoteAddress());
 
-                        //
                         if(remote != null && remote.getRemoteAddress().equals(serverAddress))
                         {
                             System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
@@ -110,12 +104,11 @@ public class PortForwarder {
                             remote = findUserSocketChannel(keyChannel.getLocalAddress());
 
                             buf.flip();
+
                             remote.write(buf);//проверка что не все записало; если не все то write
                             remote.register(selector, SelectionKey.OP_READ, null);
                             //remote.close(); //!!!!!!!
-
                         }
-
                     }
 
                     else if(key.isConnectable())
