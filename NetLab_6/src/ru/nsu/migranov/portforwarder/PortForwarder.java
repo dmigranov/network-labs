@@ -121,9 +121,8 @@ public class PortForwarder {
                         }
                         else {
                             if (keyChannel.finishConnect()) {
-                                //remote.getRemoteAddress() - адрес сервера если чё
                                 key.interestOps(SelectionKey.OP_WRITE); //READ WRITE?
-                                System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
+                                //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());   //remote.getRemoteAddress() - адрес сервера
                             }
                             continue; //не делаю ремув ь.к поменял
                         }
@@ -139,25 +138,18 @@ public class PortForwarder {
                         key.interestOps(SelectionKey.OP_READ);
                     }
 
-                    //
-
                     iter.remove();
                 }
             }
-
         }
         catch(IOException e)
         {
-
             e.printStackTrace();
             System.exit(2);
         }
 
     }
 
-    private void readData(SelectionKey key, ByteBuffer buf) throws IOException
-    {
-    }
 
     private SocketChannel findUserSocketChannel(SocketAddress serverSocketAddress) throws IOException
     {
