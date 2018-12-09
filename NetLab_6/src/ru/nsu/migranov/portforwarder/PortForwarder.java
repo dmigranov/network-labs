@@ -72,21 +72,18 @@ public class PortForwarder {
                         //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
                         usersServer.put(client.getRemoteAddress(), remote);
                         usersUs.put(client.getRemoteAddress(), client);
-
                     }
 
                     else if(key.isReadable())
                     {
                         SocketChannel keyChannel = (SocketChannel)key.channel();
-                         //не обязательно наш клиент, целевой сервер тоже может
                         if(keyChannel.read(buf) == -1) {
                             keyChannel.close();
                             continue;
                         }
 
-                        //пока не знаю как буду узнвавать, кому перенаправлять, но если что можно прикрепить объект к ключу
                         //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
-                        System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
+                        //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
                         //System.out.println("GOT MESSAGE");
                         SocketChannel remote = usersServer.get(keyChannel.getRemoteAddress());
 
@@ -96,11 +93,13 @@ public class PortForwarder {
                             System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                             //клиент пишет на сервер
                             if(remote.isConnected()) {
-                                System.out.println("COUNT: " + remote.write(buf));//проверка что не все записало; если не все то write
+                                buf.flip();
+                                remote.write(buf);//проверка что не все записало; если не все то write
                                 remote.register(selector, SelectionKey.OP_READ, null);
                             }
                             else {
                                 //System.out.println("NOT CONNECTED YET");
+                                buf.flip(); //?
                                 remote.register(selector, SelectionKey.OP_CONNECT, buf);
                             }
                         }
@@ -125,7 +124,7 @@ public class PortForwarder {
                         SocketChannel keyChannel = (SocketChannel)key.channel();
                         if(keyChannel.isConnected())
                         {
-                            //keyChannel.close();
+                            keyChannel.close(); //закомментить?
                         }
                         else {
                             if (keyChannel.finishConnect()) {
@@ -141,7 +140,9 @@ public class PortForwarder {
                         ByteBuffer toWrite = (ByteBuffer)key.attachment();
                         SocketChannel keyChannel = (SocketChannel)key.channel();
                         if(toWrite != null) //!!!
+                        {
                             keyChannel.write(toWrite); //проверка на то что не все
+                        }
                         key.interestOps(SelectionKey.OP_READ);
                     }
 
@@ -154,7 +155,7 @@ public class PortForwarder {
         }
         catch(IOException e)
         {
-            //System.err.println("IOException!");
+
             e.printStackTrace();
             System.exit(2);
         }
