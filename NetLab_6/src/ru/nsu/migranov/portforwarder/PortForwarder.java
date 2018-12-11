@@ -71,6 +71,7 @@ public class PortForwarder {
                     }
                     else if(key.isReadable())
                     {
+                        SocketChannel remote = null;
                         SocketChannel keyChannel = (SocketChannel)key.channel();
                         try {
                             if(keyChannel.read(buf) == -1) {
@@ -79,18 +80,18 @@ public class PortForwarder {
                                 continue;
                             }
                             //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
-                            SocketChannel remote = usersServer.get(keyChannel.getRemoteAddress());
+
+                            remote = usersServer.get(keyChannel.getRemoteAddress());
 
                             if (remote != null && remote.getRemoteAddress().equals(serverAddress)) {
-                                System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
+                                //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                                 //клиент пишет на сервер
+                                buf.flip();
                                 if (remote.isConnected()) {
-                                    buf.flip();
+
                                     remote.write(buf);//проверка что не все записало; если не все то write
                                     remote.register(selector, SelectionKey.OP_READ, null);
                                 } else {
-                                    //System.out.println("NOT CONNECTED YET");
-                                    buf.flip(); //?
                                     remote.register(selector, SelectionKey.OP_CONNECT, buf);
                                 }
                             } else {
@@ -107,8 +108,12 @@ public class PortForwarder {
                         }
                         catch(IOException e)
                         {
+                            System.out.println("HERE");
+                            System.out.println(remote.getLocalAddress());
                             //delete?
-                            key.cancel();
+                            //key.cancel();
+                            //continue;
+
                         }
                     }
 
@@ -116,17 +121,24 @@ public class PortForwarder {
                     {
                         //stackoverflow java solaris nio op_connect problem
                         SocketChannel keyChannel = (SocketChannel)key.channel();
-                        if(keyChannel.isConnected())
+                        /*if(keyChannel.isConnected())
                         {
                             keyChannel.close(); //закомментить?
                         }
                         else {
                             if (keyChannel.finishConnect()) {
                                 key.interestOps(SelectionKey.OP_WRITE); //READ WRITE?
-                                //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());   //remote.getRemoteAddress() - адрес сервера
+                                System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());   //remote.getRemoteAddress() - адрес сервера
                             }
                             //continue;
+                        }*/
+                        if(!keyChannel.isConnected() && keyChannel.finishConnect())
+                        {
+                            key.interestOps(SelectionKey.OP_WRITE);
+                            System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         }
+                        /*else
+                            keyChannel.close();*/
                     }
                     else if(key.isWritable())
                     {
@@ -138,7 +150,6 @@ public class PortForwarder {
                         }
                         key.interestOps(SelectionKey.OP_READ);
                     }
-
                     iter.remove();
                 }
             }
@@ -156,12 +167,10 @@ public class PortForwarder {
     {
         for(Map.Entry<SocketAddress, SocketChannel> entry: usersServer.entrySet())
         {
-
             if (entry.getValue().isConnected() && entry.getValue().getLocalAddress().equals(serverSocketAddress)) {
-                System.out.println("HELLO");
+
                 return usersUs.get(entry.getKey());
             }
-
         }
         return null;
     }
