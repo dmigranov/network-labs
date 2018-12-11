@@ -5,22 +5,23 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
-
-import java.nio.charset.Charset;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-public class PortForwarder {
+public class PortForwarder2 {
     private int lport;
     private SocketAddress serverAddress;
-    private Map<SocketAddress, SocketChannel> usersServer = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до сервера
-    private Map<SocketAddress, SocketChannel> usersUs = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до юзера
+    //private Map<SocketAddress, SocketChannel> usersServer = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до сервера
+    //private Map<SocketAddress, SocketChannel> usersUs = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до юзера
 
 
-    PortForwarder(int lport, InetAddress rhost, int rport) {
+    PortForwarder2(int lport, InetAddress rhost, int rport) {
         this.lport = lport;
         serverAddress = new InetSocketAddress(rhost, rport);
     }
@@ -53,21 +54,21 @@ public class PortForwarder {
                         SocketChannel client = local.accept();
 
                         client.configureBlocking(false);
-                        SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ); //READ? WRITE
-                        SocketChannel remote = SocketChannel.open();
 
+
+                        SocketChannel remote = SocketChannel.open();
                         remote.configureBlocking(false);
                         if(!remote.connect(serverAddress)) {
-                            remote.register(selector, SelectionKey.OP_CONNECT);
+                            remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(remote, client));
                         }
                         else {
-                            remote.register(selector, SelectionKey.OP_WRITE); //я не регистрирую на Write т.к. на write доступен почти всегда; по требованию!
-                            //users.put()
+                            //remote.register(selector, SelectionKey.OP_WRITE, new ForwarderContext(remote, client));
                         }
+                        SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ, new ForwarderContext(remote, client));
                         //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                         //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
-                        usersServer.put(client.getRemoteAddress(), remote);
-                        usersUs.put(client.getRemoteAddress(), client);
+                        //usersServer.put(client.getRemoteAddress(), remote);
+                        //usersUs.put(client.getRemoteAddress(), client);
                     }
                     else if(key.isReadable())
                     {
@@ -80,11 +81,12 @@ public class PortForwarder {
                                 continue;
                             }
                             //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
+                            //ForwarderContext = key.
+                            //remote = usersServer.get(keyChannel.getRemoteAddress());
+                            ForwarderContext fc = (ForwarderContext)key.attachment();
 
-                            remote = usersServer.get(keyChannel.getRemoteAddress());
+                            if (fc.getToServer().getRemoteAddress().equals(serverAddress)) {
 
-                            if (remote != null && remote.getRemoteAddress().equals(serverAddress)) {
-                                //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
                                 //клиент пишет на сервер
                                 buf.flip();
                                 if (remote.isConnected()) {
@@ -134,7 +136,7 @@ public class PortForwarder {
                         }*/
                         if(!keyChannel.isConnected() && keyChannel.finishConnect())
                         {
-                            key.interestOps(SelectionKey.OP_WRITE);
+                            key.interestOps(0);
                             System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         }
                         /*else
@@ -165,13 +167,13 @@ public class PortForwarder {
 
     private SocketChannel findUserSocketChannel(SocketAddress serverSocketAddress) throws IOException
     {
-        for(Map.Entry<SocketAddress, SocketChannel> entry: usersServer.entrySet())
+        /*for(Map.Entry<SocketAddress, SocketChannel> entry: usersServer.entrySet())
         {
             if (entry.getValue().isConnected() && entry.getValue().getLocalAddress().equals(serverSocketAddress)) {
 
                 return usersUs.get(entry.getKey());
             }
-        }
+        }*/
         return null;
     }
 
