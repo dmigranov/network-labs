@@ -17,9 +17,6 @@ import java.util.Set;
 public class PortForwarder2 {
     private int lport;
     private SocketAddress serverAddress;
-    //private Map<SocketAddress, SocketChannel> usersServer = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до сервера
-    //private Map<SocketAddress, SocketChannel> usersUs = new HashMap<>(); //мапа: адрес пользователя - сокетченнел от нас до юзера
-
 
     PortForwarder2(int lport, InetAddress rhost, int rport) {
         this.lport = lport;
@@ -65,10 +62,7 @@ public class PortForwarder2 {
                             //remote.register(selector, SelectionKey.OP_WRITE, new ForwarderContext(remote, client));
                         }
                         SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ, new ForwarderContext(remote, client));
-                        //System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
-                        //System.out.println(client.getLocalAddress() + " " + client.getRemoteAddress());
-                        //usersServer.put(client.getRemoteAddress(), remote);
-                        //usersUs.put(client.getRemoteAddress(), client);
+
                     }
                     else if(key.isReadable())
                     {
@@ -77,7 +71,7 @@ public class PortForwarder2 {
                         try {
                             if(keyChannel.read(buf) == -1) {
                                 keyChannel.close();
-                                iter.remove(); //???
+                                iter.remove();
                                 continue;
                             }
                             //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
@@ -85,70 +79,78 @@ public class PortForwarder2 {
                             //remote = usersServer.get(keyChannel.getRemoteAddress());
                             ForwarderContext fc = (ForwarderContext)key.attachment();
 
-                            if (fc.getToServer().getRemoteAddress().equals(serverAddress)) {
+                            if (fc.getWhereToWrite().getRemoteAddress().equals(serverAddress)) {
 
+                                remote = fc.getWhereToWrite();
                                 //клиент пишет на сервер
                                 buf.flip();
                                 if (remote.isConnected()) {
 
                                     remote.write(buf);//проверка что не все записало; если не все то write
-                                    remote.register(selector, SelectionKey.OP_READ, null);
+                                    remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(fc.getFromWhere(), fc.getWhereToWrite()));
                                 } else {
-                                    remote.register(selector, SelectionKey.OP_CONNECT, buf);
+                                    //remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getFromWhere(), fc.getWhereToWrite()));
+                                    remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getWhereToWrite(), fc.getFromWhere()));
+
                                 }
                             } else {
                                 //сервер отвечает клиенту
-                                System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
-                                remote = findUserSocketChannel(keyChannel.getLocalAddress());
+                                //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
+                                remote = fc.getWhereToWrite();
 
                                 buf.flip();
 
                                 remote.write(buf);//проверка что не все записало; если не все то write
-                                remote.register(selector, SelectionKey.OP_READ, null);
+                                remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(fc.getFromWhere(), fc.getWhereToWrite()));
                                 //remote.close(); //!!!!!!!
                             }
+                            /*remote = fc.getWhereToWrite();
+                            buf.flip();
+                            if (remote.isConnected()) {
+
+                                remote.write(buf);
+                                remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(fc.getFromWhere(), fc.getWhereToWrite()));
+                            } else {
+                                remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getFromWhere(), fc.getWhereToWrite()));
+                            }*/
+
+
                         }
                         catch(IOException e)
                         {
-                            System.out.println("HERE");
-                            System.out.println(remote.getLocalAddress());
-                            //delete?
-                            //key.cancel();
-                            //continue;
 
+                            //continue;
                         }
                     }
 
                     else if(key.isConnectable())
                     {
-                        //stackoverflow java solaris nio op_connect problem
+
                         SocketChannel keyChannel = (SocketChannel)key.channel();
-                        /*if(keyChannel.isConnected())
-                        {
-                            keyChannel.close(); //закомментить?
-                        }
-                        else {
-                            if (keyChannel.finishConnect()) {
-                                key.interestOps(SelectionKey.OP_WRITE); //READ WRITE?
-                                System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());   //remote.getRemoteAddress() - адрес сервера
-                            }
-                            //continue;
-                        }*/
+
                         if(!keyChannel.isConnected() && keyChannel.finishConnect())
                         {
-                            key.interestOps(0);
-                            System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
+                            if(((ForwarderContext)key.attachment()).getToWrite() != null)
+                                key.interestOps(SelectionKey.OP_WRITE);
+                            else
+                                key.interestOps(0);
+                            //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         }
                         /*else
                             keyChannel.close();*/
                     }
                     else if(key.isWritable())
                     {
-                        ByteBuffer toWrite = (ByteBuffer)key.attachment();
+                        ForwarderContext fc = (ForwarderContext)key.attachment();
+                        ByteBuffer toWrite = fc.getToWrite();
                         SocketChannel keyChannel = (SocketChannel)key.channel();
+                        SocketChannel wtwChannel;
+
                         if(toWrite != null) //!!!
                         {
                             keyChannel.write(toWrite); //проверка на то что не все
+                            //fc.getWhereToWrite().write(toWrite);
+                            wtwChannel = fc.getWhereToWrite();
                         }
                         key.interestOps(SelectionKey.OP_READ);
                     }
