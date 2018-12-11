@@ -9,6 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -56,12 +57,12 @@ public class PortForwarder2 {
                         SocketChannel remote = SocketChannel.open();
                         remote.configureBlocking(false);
                         if(!remote.connect(serverAddress)) {
-                            remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(remote, client));
+                            remote.register(selector, SelectionKey.OP_CONNECT);
                         }
                         else {
                             //remote.register(selector, SelectionKey.OP_WRITE, new ForwarderContext(remote, client));
                         }
-                        SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ, new ForwarderContext(remote, client));
+                        client.register(selector, SelectionKey.OP_READ, new ForwarderContext(remote));
 
                     }
                     else if(key.isReadable())
@@ -80,20 +81,20 @@ public class PortForwarder2 {
                             ForwarderContext fc = (ForwarderContext)key.attachment();
 
                             if (fc.getWhereToWrite().getRemoteAddress().equals(serverAddress)) {
-
                                 remote = fc.getWhereToWrite();
                                 //клиент пишет на сервер
                                 buf.flip();
                                 if (remote.isConnected()) {
 
                                     remote.write(buf);//проверка что не все записало; если не все то write
-                                    remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(fc.getFromWhere(), fc.getWhereToWrite()));
+                                    remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(keyChannel));
                                 } else {
                                     //remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getFromWhere(), fc.getWhereToWrite()));
-                                    remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getWhereToWrite(), fc.getFromWhere()));
+                                    remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, remote));
 
                                 }
                             } else {
+
                                 //сервер отвечает клиенту
                                 //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                                 remote = fc.getWhereToWrite();
@@ -101,7 +102,7 @@ public class PortForwarder2 {
                                 buf.flip();
 
                                 remote.write(buf);//проверка что не все записало; если не все то write
-                                remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(fc.getFromWhere(), fc.getWhereToWrite()));
+                                remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(keyChannel));
                                 //remote.close(); //!!!!!!!
                             }
                             /*remote = fc.getWhereToWrite();
@@ -118,7 +119,7 @@ public class PortForwarder2 {
                         }
                         catch(IOException e)
                         {
-
+                            e.printStackTrace();
                             //continue;
                         }
                     }
@@ -130,10 +131,12 @@ public class PortForwarder2 {
 
                         if(!keyChannel.isConnected() && keyChannel.finishConnect())
                         {
-                            if(((ForwarderContext)key.attachment()).getToWrite() != null)
+                            if(key.attachment() != null && ((ForwarderContext)key.attachment()).getToWrite() != null)
                                 key.interestOps(SelectionKey.OP_WRITE);
-                            else
-                                key.interestOps(0);
+                            else {
+                                //key.interestOps(0);
+                                key.cancel();
+                            }
                             //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         }
                         /*else
