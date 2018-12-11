@@ -24,7 +24,7 @@ public class Main {
         }
         int rport = Integer.parseInt(args[2]);
 
-        PortForwarder2 forwarder = new PortForwarder2(lport, rhost, rport);
+        PortForwarderWithContext forwarder = new PortForwarderWithContext(lport, rhost, rport);
         forwarder.run();
     }
 }

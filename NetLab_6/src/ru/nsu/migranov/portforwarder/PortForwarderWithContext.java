@@ -14,40 +14,34 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-public class PortForwarder2 {
+public class PortForwarderWithContext {
     private int lport;
     private SocketAddress serverAddress;
 
-    PortForwarder2(int lport, InetAddress rhost, int rport) {
+    PortForwarderWithContext(int lport, InetAddress rhost, int rport) {
         this.lport = lport;
         serverAddress = new InetSocketAddress(rhost, rport);
     }
 
-
-    public void run()
-    {
-        try(Selector selector = Selector.open();
-            ServerSocketChannel local = ServerSocketChannel.open();
-           )
-        {
+    public void run() {
+        try (Selector selector = Selector.open();
+             ServerSocketChannel local = ServerSocketChannel.open();
+        ) {
             local.bind(new InetSocketAddress("localhost", lport)); //название протокола?
             local.configureBlocking(false);
             local.register(selector, SelectionKey.OP_ACCEPT);
             ByteBuffer buf = ByteBuffer.allocate(1024);
 
-            while(true)
-            {
+            while (true) {
                 buf.clear();
                 selector.select(); //возвращает только если хотя бы один channel выбран
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iter = selectedKeys.iterator();
 
-                while(iter.hasNext())
-                {
+                while (iter.hasNext()) {
                     SelectionKey key = iter.next();
 
-                    if(key.isAcceptable())
-                    {
+                    if (key.isAcceptable()) {
                         SocketChannel client = local.accept();
 
                         client.configureBlocking(false);
@@ -55,21 +49,18 @@ public class PortForwarder2 {
 
                         SocketChannel remote = SocketChannel.open();
                         remote.configureBlocking(false);
-                        if(!remote.connect(serverAddress)) {
+                        if (!remote.connect(serverAddress)) {
                             remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(remote, client));
-                        }
-                        else {
+                        } else {
                             //remote.register(selector, SelectionKey.OP_WRITE, new ForwarderContext(remote, client));
                         }
                         SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ, new ForwarderContext(remote, client));
 
-                    }
-                    else if(key.isReadable())
-                    {
+                    } else if (key.isReadable()) {
                         SocketChannel remote = null;
-                        SocketChannel keyChannel = (SocketChannel)key.channel();
+                        SocketChannel keyChannel = (SocketChannel) key.channel();
                         try {
-                            if(keyChannel.read(buf) == -1) {
+                            if (keyChannel.read(buf) == -1) {
                                 keyChannel.close();
                                 iter.remove();
                                 continue;
@@ -77,9 +68,9 @@ public class PortForwarder2 {
                             //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
                             //ForwarderContext = key.
                             //remote = usersServer.get(keyChannel.getRemoteAddress());
-                            ForwarderContext fc = (ForwarderContext)key.attachment();
+                            ForwarderContext fc = (ForwarderContext) key.attachment();
 
-                            if (fc.getWhereToWrite().getRemoteAddress().equals(serverAddress)) {
+                            /*if (fc.getWhereToWrite().getRemoteAddress().equals(serverAddress)) {
 
                                 remote = fc.getWhereToWrite();
                                 //клиент пишет на сервер
@@ -89,8 +80,8 @@ public class PortForwarder2 {
                                     remote.write(buf);//проверка что не все записало; если не все то write
                                     remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(fc.getFromWhere(), fc.getWhereToWrite()));
                                 } else {
-                                    //remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getFromWhere(), fc.getWhereToWrite()));
-                                    remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getWhereToWrite(), fc.getFromWhere()));
+                                    remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getFromWhere(), fc.getWhereToWrite()));
+                                    //remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getWhereToWrite(), fc.getFromWhere()));
 
                                 }
                             } else {
@@ -103,8 +94,8 @@ public class PortForwarder2 {
                                 remote.write(buf);//проверка что не все записало; если не все то write
                                 remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(fc.getFromWhere(), fc.getWhereToWrite()));
                                 //remote.close(); //!!!!!!!
-                            }
-                            /*remote = fc.getWhereToWrite();
+                            }*/
+                            remote = fc.getWhereToWrite();
                             buf.flip();
                             if (remote.isConnected()) {
 
@@ -112,71 +103,43 @@ public class PortForwarder2 {
                                 remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(fc.getFromWhere(), fc.getWhereToWrite()));
                             } else {
                                 remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getFromWhere(), fc.getWhereToWrite()));
-                            }*/
+                            }
 
 
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                        catch(IOException e)
-                        {
+                    } else if (key.isConnectable()) {
 
-                            //continue;
-                        }
-                    }
+                        SocketChannel keyChannel = (SocketChannel) key.channel();
 
-                    else if(key.isConnectable())
-                    {
-
-                        SocketChannel keyChannel = (SocketChannel)key.channel();
-
-                        if(!keyChannel.isConnected() && keyChannel.finishConnect())
-                        {
-                            if(((ForwarderContext)key.attachment()).getToWrite() != null)
+                        if (!keyChannel.isConnected() && keyChannel.finishConnect()) {
+                            if (((ForwarderContext) key.attachment()).getToWrite() != null)
                                 key.interestOps(SelectionKey.OP_WRITE);
                             else
-                                key.interestOps(0);
+                                key.cancel();
                             //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
                         }
                         /*else
                             keyChannel.close();*/
-                    }
-                    else if(key.isWritable())
-                    {
-                        ForwarderContext fc = (ForwarderContext)key.attachment();
+                    } else if (key.isWritable()) {
+                        ForwarderContext fc = (ForwarderContext) key.attachment();
                         ByteBuffer toWrite = fc.getToWrite();
-                        SocketChannel keyChannel = (SocketChannel)key.channel();
-                        SocketChannel wtwChannel;
+                        SocketChannel keyChannel = (SocketChannel) key.channel();
 
-                        if(toWrite != null) //!!!
+
+                        if (toWrite != null) //!!!
                         {
-                            keyChannel.write(toWrite); //проверка на то что не все
-                            //fc.getWhereToWrite().write(toWrite);
-                            wtwChannel = fc.getWhereToWrite();
+                            keyChannel.write(toWrite);
                         }
                         key.interestOps(SelectionKey.OP_READ);
                     }
                     iter.remove();
                 }
             }
-        }
-        catch(IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
             System.exit(2);
         }
-
     }
-
-
-    private SocketChannel findUserSocketChannel(SocketAddress serverSocketAddress) throws IOException
-    {
-        /*for(Map.Entry<SocketAddress, SocketChannel> entry: usersServer.entrySet())
-        {
-            if (entry.getValue().isConnected() && entry.getValue().getLocalAddress().equals(serverSocketAddress)) {
-
-                return usersUs.get(entry.getKey());
-            }
-        }*/
-        return null;
-    }
-
 }
