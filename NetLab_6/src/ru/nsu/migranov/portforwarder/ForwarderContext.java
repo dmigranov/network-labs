@@ -6,20 +6,20 @@ import java.nio.channels.SocketChannel;
 public class ForwarderContext {
     private ByteBuffer toWrite;
     private SocketChannel whereToWrite;
-    private SocketChannel fromWhere;
+    //private SocketChannel fromWhere;
 
-    ForwarderContext(ByteBuffer toWrite, SocketChannel whereToWrite, SocketChannel fromWhere)
+    ForwarderContext(ByteBuffer toWrite, SocketChannel whereToWrite)
     {
         this.toWrite = toWrite;
         this.whereToWrite = whereToWrite;
-        this.fromWhere = fromWhere;
+        //this.fromWhere = fromWhere;
     }
 
-    ForwarderContext(SocketChannel whereToWrite, SocketChannel fromWhere)
+    ForwarderContext(SocketChannel whereToWrite)
     {
         this.toWrite = null;
         this.whereToWrite = whereToWrite;
-        this.fromWhere = fromWhere;
+        //this.fromWhere = fromWhere;
     }
     void setBuffer(ByteBuffer toWrite)
     {
@@ -35,7 +35,7 @@ public class ForwarderContext {
         return whereToWrite;
     }
 
-    public SocketChannel getFromWhere() {
+    /*public SocketChannel getFromWhere() {
         return fromWhere;
-    }
+    }*/
 }
