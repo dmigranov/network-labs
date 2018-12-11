@@ -156,17 +156,12 @@ public class PortForwarder {
     {
         for(Map.Entry<SocketAddress, SocketChannel> entry: usersServer.entrySet())
         {
-            try {
-                if (entry.getValue().isConnected() && entry.getValue().getLocalAddress().equals(serverSocketAddress)) {
-                    System.out.println("HELLO");
-                    return usersUs.get(entry.getKey());
-                }
-            }
-            catch(ClosedChannelException e)
-            {
-                //remove?
 
+            if (entry.getValue().isConnected() && entry.getValue().getLocalAddress().equals(serverSocketAddress)) {
+                System.out.println("HELLO");
+                return usersUs.get(entry.getKey());
             }
+
         }
         return null;
     }
