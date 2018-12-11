@@ -5,10 +5,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -75,39 +72,43 @@ public class PortForwarder {
                     else if(key.isReadable())
                     {
                         SocketChannel keyChannel = (SocketChannel)key.channel();
-                        if(keyChannel.read(buf) == -1) {
-                            keyChannel.close();
-                            continue;
-                        }
-                        //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
-                        SocketChannel remote = usersServer.get(keyChannel.getRemoteAddress());
+                        try {
+                            if(keyChannel.read(buf) == -1) {
+                                keyChannel.close();
+                                iter.remove(); //???
+                                continue;
+                            }
+                            //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
+                            SocketChannel remote = usersServer.get(keyChannel.getRemoteAddress());
 
-                        if(remote != null && remote.getRemoteAddress().equals(serverAddress))
-                        {
-                            System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
-                            //клиент пишет на сервер
-                            if(remote.isConnected()) {
+                            if (remote != null && remote.getRemoteAddress().equals(serverAddress)) {
+                                System.out.println(remote.getLocalAddress() + " " + remote.getRemoteAddress());
+                                //клиент пишет на сервер
+                                if (remote.isConnected()) {
+                                    buf.flip();
+                                    remote.write(buf);//проверка что не все записало; если не все то write
+                                    remote.register(selector, SelectionKey.OP_READ, null);
+                                } else {
+                                    //System.out.println("NOT CONNECTED YET");
+                                    buf.flip(); //?
+                                    remote.register(selector, SelectionKey.OP_CONNECT, buf);
+                                }
+                            } else {
+                                //сервер отвечает клиенту
+                                System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
+                                remote = findUserSocketChannel(keyChannel.getLocalAddress());
+
                                 buf.flip();
+
                                 remote.write(buf);//проверка что не все записало; если не все то write
                                 remote.register(selector, SelectionKey.OP_READ, null);
-                            }
-                            else {
-                                //System.out.println("NOT CONNECTED YET");
-                                buf.flip(); //?
-                                remote.register(selector, SelectionKey.OP_CONNECT, buf);
+                                //remote.close(); //!!!!!!!
                             }
                         }
-                        else
+                        catch(IOException e)
                         {
-                            //сервер отвечает клиенту
-                            System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());
-                            remote = findUserSocketChannel(keyChannel.getLocalAddress());
-
-                            buf.flip();
-
-                            remote.write(buf);//проверка что не все записало; если не все то write
-                            remote.register(selector, SelectionKey.OP_READ, null);
-                            //remote.close(); //!!!!!!!
+                            //delete?
+                            key.cancel();
                         }
                     }
 
@@ -124,7 +125,7 @@ public class PortForwarder {
                                 key.interestOps(SelectionKey.OP_WRITE); //READ WRITE?
                                 //System.out.println(keyChannel.getLocalAddress() + " " + keyChannel.getRemoteAddress());   //remote.getRemoteAddress() - адрес сервера
                             }
-                            continue; //не делаю ремув ь.к поменял
+                            //continue;
                         }
                     }
                     else if(key.isWritable())
@@ -155,10 +156,16 @@ public class PortForwarder {
     {
         for(Map.Entry<SocketAddress, SocketChannel> entry: usersServer.entrySet())
         {
-            if (entry.getValue().isConnected() && entry.getValue().getLocalAddress().equals(serverSocketAddress))
+            try {
+                if (entry.getValue().isConnected() && entry.getValue().getLocalAddress().equals(serverSocketAddress)) {
+                    System.out.println("HELLO");
+                    return usersUs.get(entry.getKey());
+                }
+            }
+            catch(ClosedChannelException e)
             {
-                System.out.println("HELLO");
-                return usersUs.get(entry.getKey());
+                //remove?
+
             }
         }
         return null;
