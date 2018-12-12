@@ -53,21 +53,21 @@ public class PortForwarderWithContext {
                             remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(remote, client));
                         } else {
                             //remote.register(selector, SelectionKey.OP_WRITE, new ForwarderContext(remote, client));
+
                         }
                         SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ, new ForwarderContext(remote, client));
 
                     } else if (key.isReadable()) {
                         SocketChannel remote = null;
                         SocketChannel keyChannel = (SocketChannel) key.channel();
+                        int readCount;
                         try {
-                            if (keyChannel.read(buf) == -1) {
-                                keyChannel.close();
+                            if ((readCount = keyChannel.read(buf)) == -1) {
+                                //keyChannel.close();
                                 iter.remove();
                                 continue;
                             }
                             //System.out.println(new String(buf.array(), Charset.forName("UTF-8")));
-                            //ForwarderContext = key.
-                            //remote = usersServer.get(keyChannel.getRemoteAddress());
                             ForwarderContext fc = (ForwarderContext) key.attachment();
 
                             /*if (fc.getWhereToWrite().getRemoteAddress().equals(serverAddress)) {
@@ -97,15 +97,14 @@ public class PortForwarderWithContext {
                             }*/
                             remote = fc.getWhereToWrite();
                             buf.flip();
-                            if (remote.isConnected()) {
+                            if (remote.isConnected() && readCount != 0) {
 
-                                remote.write(buf);
+                                int writeCount = remote.write(buf);
+                                System.out.println("Wrote " + writeCount + " of " + readCount + "; " + buf.position());
                                 remote.register(selector, SelectionKey.OP_READ, new ForwarderContext(fc.getFromWhere(), fc.getWhereToWrite()));
                             } else {
                                 remote.register(selector, SelectionKey.OP_CONNECT, new ForwarderContext(buf, fc.getFromWhere(), fc.getWhereToWrite()));
                             }
-
-
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -126,7 +125,6 @@ public class PortForwarderWithContext {
                         ForwarderContext fc = (ForwarderContext) key.attachment();
                         ByteBuffer toWrite = fc.getToWrite();
                         SocketChannel keyChannel = (SocketChannel) key.channel();
-
 
                         if (toWrite != null) //!!!
                         {
