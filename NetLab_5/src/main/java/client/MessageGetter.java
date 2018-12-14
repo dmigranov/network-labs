@@ -22,7 +22,7 @@ public class MessageGetter implements Runnable {
     @Override
     public void run() {
         try {
-            WebsocketClient client = new WebsocketClient(new URI(serverAddress + "/messages_ws"), token);
+            WebsocketClient client = new WebsocketClient(new URI(serverAddress + "/messages_ws"), token, uid);
         }
         catch(IOException | URISyntaxException | DeploymentException e) //TODO: нормальная обработка ошибок
         {

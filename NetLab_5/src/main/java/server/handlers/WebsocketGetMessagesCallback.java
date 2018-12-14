@@ -8,6 +8,7 @@ import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 import org.xnio.ChannelListener;
 import server.Messages;
+import server.User;
 import server.Users;
 
 import java.io.IOException;
@@ -38,7 +39,17 @@ public class WebsocketGetMessagesCallback implements WebSocketConnectionCallback
             @Override
             protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) throws IOException {
                 //super.onFullTextMessage(channel, message);
-                System.out.println(message.getData());
+                String token = message.getData();
+                User user = users.get(token);
+                if (user == null)
+                {
+                    exchange.close();
+                    webSocketChannel.close();
+                }
+                else
+                {
+                    //всё ок, можно оотправлять сообщения
+                }
 
 
             }});

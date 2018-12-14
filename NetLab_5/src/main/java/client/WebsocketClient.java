@@ -9,12 +9,15 @@ public class WebsocketClient
 {
     Session session = null;
     String token;
+    int uid;
 
-    WebsocketClient(URI uri, String token) throws IOException, DeploymentException
+    WebsocketClient(URI uri, String token, int uid) throws IOException, DeploymentException
     {
         this.token = token;
+        this.uid = uid;
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         container.connectToServer(this, uri);
+        //TODO: объединить webdocket client и MEssageGetter (WebsocketClient implements Runnable)
 
     }
     @OnOpen
