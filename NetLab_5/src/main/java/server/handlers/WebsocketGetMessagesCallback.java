@@ -31,8 +31,8 @@ public class WebsocketGetMessagesCallback implements WebSocketConnectionCallback
         webSocketChannel.getCloseSetter().set(new ChannelListener<AbstractFramedChannel>() {
             @Override
             public void handleEvent(AbstractFramedChannel abstractFramedChannel) {
-                System.out.println("CLOSE!");
-                hasToStop = true;
+                /*System.out.println("CLOSE!");
+                hasToStop = true;*/
             }
         });
         webSocketChannel.getReceiveSetter().set(new AbstractReceiveListener() {
@@ -65,8 +65,6 @@ public class WebsocketGetMessagesCallback implements WebSocketConnectionCallback
 
             }});
         webSocketChannel.resumeReceives();
-
-
 
         //System.out.println(t);
 

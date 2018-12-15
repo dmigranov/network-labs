@@ -3,6 +3,9 @@ package server.handlers;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
+import io.undertow.websockets.core.WebSocketCallback;
+import io.undertow.websockets.core.WebSocketChannel;
+import io.undertow.websockets.core.WebSockets;
 import org.json.JSONObject;
 import org.xnio.streams.ChannelInputStream;
 import org.xnio.streams.ChannelOutputStream;
@@ -49,7 +52,23 @@ public class LoginHandler extends AbstractRestHandler {
                     responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                     responseStream.write(jsonBytes);
                     responseStream.close();
-                    messages.add(new Message(username + " joined in", -1));
+                    int mid = messages.add(new Message(username + " joined in", -1));
+
+                    String jsonString = new JSONObject().put("id", mid).put("message", username + " logged in").put("author", -1).toString();
+                    for (int i = 0; i < users.size(); i++) {
+                        final User userIter = users.get(i);
+                        if(userIter.isOnline() && userIter.getWebSocketChannel() != null) {
+                            WebSockets.sendText(jsonString, userIter.getWebSocketChannel(), new WebSocketCallback<Void>() {
+                                @Override
+                                public void onError(WebSocketChannel webSocketChannel, Void o, Throwable throwable) {
+                                    user.setWentOffline(true);
+                                }
+
+                                @Override
+                                public void complete(WebSocketChannel webSocketChannel, Void o) {}
+                            });
+                        }
+                    }
                 }
                 else
                 {

@@ -12,7 +12,7 @@ public class User {
     private boolean isOnline = true; //мож потом понадобится
     private int onlineCounter = 0;
     private WebSocketChannel webSocketChannel = null;
-
+    private boolean wentOffline;
 
 
     public User(String username)
@@ -54,6 +54,10 @@ public class User {
 
     public WebSocketChannel getWebSocketChannel() {
         return webSocketChannel;
+    }
+
+    public void setWentOffline(boolean wentOffline) {
+        this.wentOffline = wentOffline;
     }
 }
 

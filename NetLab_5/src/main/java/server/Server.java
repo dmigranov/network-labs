@@ -1,6 +1,8 @@
 package server;
 
 import io.undertow.Undertow;
+import io.undertow.websockets.core.WebSockets;
+import org.json.JSONObject;
 import server.handlers.RootHandler;
 
 public class Server {
@@ -30,8 +32,19 @@ public class Server {
             for (int uid = 0; uid < users.size(); uid++) {
                 User user = users.get(uid);
                 if(user.incrementOnlineCounter() > 5 && user.isOnline()) {
-                    user.setOnline(false);
-                    messages.add(new Message(user.getUsername() + " left", -1));
+                    //user.setOnline(false);
+                    int mid = messages.add(new Message(user.getUsername() + " left", -1));
+
+                    String jsonString = new JSONObject().put("id", mid).put("message", user.getUsername() + " left").put("author", -1).toString();
+                    for (int i = 0; i < users.size(); i++) {
+                        user = users.get(i);
+                        if(user.isOnline() && user.getWebSocketChannel() != null) {
+                            WebSockets.sendText(jsonString, user.getWebSocketChannel(), null);
+                        }
+                    }
+                    //TODO: ообще убрать эту систему с логоффом по таймауту
+                    //делать логофф только если не полуается написать по Websocket'у
+                    //смотри пример в LoginHandler
                 }
             }
         }

@@ -54,16 +54,20 @@ public class PostMessageHandler extends AbstractRestHandler {
 
                     String jsonString = new JSONObject().put("id", id).put("message", messageText).toString();
                     byte[] jsonBytes = jsonString.getBytes(StandardCharsets.UTF_8);
+                    //
                     responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                    responseStream.write(jsonBytes);
+                    responseStream.close();
+                    //
+                    jsonString = new JSONObject().put("id", id).put("message", messageText).put("author", uid).toString();
                     for (int i = 0; i < users.size(); i++) {
                         User user = users.get(i);
-                        if(user.isOnline()) {
+                        if(user.isOnline() && user.getWebSocketChannel() != null) {
                             WebSockets.sendText(jsonString, user.getWebSocketChannel(), null);
                         }
                     }
 
-                    responseStream.write(jsonBytes);
-                    responseStream.close();
+
                 }
             }
             else
