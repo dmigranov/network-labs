@@ -1,8 +1,6 @@
 package server;
 
 import io.undertow.Undertow;
-import io.undertow.websockets.core.WebSockets;
-import org.json.JSONObject;
 import server.handlers.RootHandler;
 
 public class Server {
@@ -29,7 +27,7 @@ public class Server {
             }
             catch (InterruptedException e) {}
 
-            for (int uid = 0; uid < users.size(); uid++) {
+            /*for (int uid = 0; uid < users.size(); uid++) {
                 User user = users.get(uid);
                 if(user.incrementOnlineCounter() > 5 && user.isOnline()) {
                     //user.setOnline(false);
@@ -46,7 +44,7 @@ public class Server {
                     //делать логофф только если не полуается написать по Websocket'у
                     //смотри пример в LoginHandler
                 }
-            }
+            }*/
         }
     }
 }
