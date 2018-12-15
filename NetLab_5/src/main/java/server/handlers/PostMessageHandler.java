@@ -4,11 +4,13 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
+import io.undertow.websockets.core.WebSockets;
 import org.json.JSONObject;
 import org.xnio.streams.ChannelInputStream;
 import org.xnio.streams.ChannelOutputStream;
 import server.Message;
 import server.Messages;
+import server.User;
 import server.Users;
 
 import java.io.BufferedReader;
@@ -50,8 +52,16 @@ public class PostMessageHandler extends AbstractRestHandler {
                     Message message = new Message(messageText, uid);
                     int id = messages.add(message);
 
-                    byte[] jsonBytes = new JSONObject().put("id", id).put("message", messageText).toString().getBytes(StandardCharsets.UTF_8);
+                    String jsonString = new JSONObject().put("id", id).put("message", messageText).toString();
+                    byte[] jsonBytes = jsonString.getBytes(StandardCharsets.UTF_8);
                     responseStream = new ChannelOutputStream(exchange.getResponseChannel());
+                    for (int i = 0; i < users.size(); i++) {
+                        User user = users.get(i);
+                        if(user.isOnline()) {
+                            WebSockets.sendText(jsonString, user.getWebSocketChannel(), null);
+                        }
+                    }
+
                     responseStream.write(jsonBytes);
                     responseStream.close();
                 }

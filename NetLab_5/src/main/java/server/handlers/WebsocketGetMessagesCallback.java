@@ -27,7 +27,7 @@ public class WebsocketGetMessagesCallback implements WebSocketConnectionCallback
 
     @Override
     public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel webSocketChannel) {
-
+        messageCounter = messages.size();
         webSocketChannel.getCloseSetter().set(new ChannelListener<AbstractFramedChannel>() {
             @Override
             public void handleEvent(AbstractFramedChannel abstractFramedChannel) {
@@ -48,7 +48,18 @@ public class WebsocketGetMessagesCallback implements WebSocketConnectionCallback
                 }
                 else
                 {
-                    //всё ок, можно оотправлять сообщения
+                    /*while(true)
+                    {
+                        int newMessageCounter;
+                        System.out.println(messageCounter);
+                        if((newMessageCounter = messages.size()) > messageCounter)
+                        {
+                            WebSockets.sendText("NEW MESSAGE", webSocketChannel, null);
+                            messageCounter = newMessageCounter;
+
+                        }
+                    }*/
+                    user.setWebSocketChannel(webSocketChannel);
                 }
 
 

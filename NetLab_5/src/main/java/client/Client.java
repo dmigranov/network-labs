@@ -3,9 +3,11 @@ package client;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.websocket.DeploymentException;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
@@ -62,7 +64,7 @@ public class Client {
                 System.out.println("Your token and id are: " + token + " and " + uid + ". Please remember them to be able to re-login");
             }
             new Thread(new MessageRefresher(args[0], token, uid, users)).start();
-            new Thread(new MessageGetter(args[0], token, uid, users)).start();
+            new Thread(new WebsocketClient(args[0], token, uid, users)).start();
             String str;
             while((str = br.readLine()) != null)
             {
@@ -125,6 +127,10 @@ public class Client {
         {
             System.err.println("Connection error: the server is dead");
             System.exit(5);
+        }
+        catch(URISyntaxException | DeploymentException c)
+        {
+            c.printStackTrace();
         }
         catch(IOException e)
         {

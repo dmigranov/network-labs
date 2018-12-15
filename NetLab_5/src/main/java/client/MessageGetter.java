@@ -1,11 +1,6 @@
 package client;
 
 
-import javax.websocket.DeploymentException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-
 public class MessageGetter implements Runnable {
     private final String serverAddress;
     private final String token;
@@ -21,12 +16,12 @@ public class MessageGetter implements Runnable {
 
     @Override
     public void run() {
-        try {
+        /*try {
             WebsocketClient client = new WebsocketClient(new URI(serverAddress + "/messages_ws"), token, uid);
         }
         catch(IOException | URISyntaxException | DeploymentException e) //TODO: нормальная обработка ошибок
         {
             e.printStackTrace();
-        }
+        */
     }
 }

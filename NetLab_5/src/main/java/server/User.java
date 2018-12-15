@@ -1,5 +1,7 @@
 package server;
 
+import io.undertow.websockets.core.WebSocketChannel;
+
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -9,6 +11,7 @@ public class User {
     private String username;
     private boolean isOnline = true; //мож потом понадобится
     private int onlineCounter = 0;
+    private WebSocketChannel webSocketChannel = null;
 
 
 
@@ -42,6 +45,15 @@ public class User {
 
     public String getToken() {
         return token;
+    }
+
+    public void setWebSocketChannel(WebSocketChannel wsc)
+    {
+        webSocketChannel = wsc;
+    }
+
+    public WebSocketChannel getWebSocketChannel() {
+        return webSocketChannel;
     }
 }
 
