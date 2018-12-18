@@ -6,10 +6,7 @@ import io.undertow.util.Headers;
 import org.json.JSONObject;
 import org.xnio.streams.ChannelInputStream;
 import org.xnio.streams.ChannelOutputStream;
-import server.Message;
-import server.Messages;
-import server.User;
-import server.Users;
+import server.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -53,8 +50,9 @@ public class LoginHandler extends AbstractRestHandler {
 
                     //!!!
 
-                    /*String jsonString = new JSONObject().put("id", mid).put("message", username + " logged in").put("author", -1).toString();
-                    for (int i = 0; i < users.size(); i++) {
+                    String jsonString = new JSONObject().put("id", mid).put("message", username + " logged in").put("author", -1).toString();
+                    WebsocketWriter.write(users, messages, jsonString);
+                    /*for (int i = 0; i < users.size(); i++) {
                         final User userIter = users.get(i);
                         if(userIter.isOnline() && userIter.getWebSocketChannel() != null) {
                             WebSockets.sendText(jsonString, userIter.getWebSocketChannel(), new WebSocketCallback<Void>() {

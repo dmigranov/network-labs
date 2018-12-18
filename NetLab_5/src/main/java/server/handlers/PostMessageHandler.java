@@ -10,6 +10,7 @@ import org.xnio.streams.ChannelOutputStream;
 import server.Message;
 import server.Messages;
 import server.Users;
+import server.WebsocketWriter;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -56,15 +57,16 @@ public class PostMessageHandler extends AbstractRestHandler {
                     responseStream = new ChannelOutputStream(exchange.getResponseChannel());
                     responseStream.write(jsonBytes);
                     responseStream.close();
-                    //!!!
-                    /*jsonString = new JSONObject().put("id", id).put("message", messageText).put("author", uid).toString();
-                    for (int i = 0; i < users.size(); i++) {
+
+                    jsonString = new JSONObject().put("id", id).put("message", messageText).put("author", uid).toString();
+                    WebsocketWriter.write(users, messages, jsonString);
+                    /*for (int i = 0; i < users.size(); i++) {
                         User user = users.get(i);
                         if(user.isOnline() && user.getWebSocketChannel() != null) {
                             WebSockets.sendText(jsonString, user.getWebSocketChannel(), null);
                         }
                     }*/
-                    //!!!
+
 
 
                 }

@@ -6,10 +6,7 @@ import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import org.json.JSONObject;
 import org.xnio.streams.ChannelOutputStream;
-import server.Message;
-import server.Messages;
-import server.User;
-import server.Users;
+import server.*;
 
 import java.nio.charset.StandardCharsets;
 
@@ -39,8 +36,9 @@ public class LogoutHandler extends AbstractRestHandler {
             int mid = messages.add(new Message(user.getUsername() + " left", -1));
 
             //!!!
-            /*String jsonString = new JSONObject().put("id", mid).put("message", user.getUsername() + " left").put("author", -1).toString();
-            for (int i = 0; i < users.size(); i++) {
+            String jsonString = new JSONObject().put("id", mid).put("message", user.getUsername() + " left").put("author", -1).toString();
+            WebsocketWriter.write(users, messages, jsonString);
+            /*for (int i = 0; i < users.size(); i++) {
                 user = users.get(i);
                 if(user.isOnline() && user.getWebSocketChannel() != null) {
                     WebSockets.sendText(jsonString, user.getWebSocketChannel(), null);
