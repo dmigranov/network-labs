@@ -48,6 +48,7 @@ public class WebsocketGetMessagesCallback implements WebSocketConnectionCallback
                 }
                 else
                 {
+                    user.setWebSocketChannel(webSocketChannel);
                     /*while(true)
                     {
                         int newMessageCounter;
@@ -59,7 +60,7 @@ public class WebsocketGetMessagesCallback implements WebSocketConnectionCallback
 
                         }
                     }*/
-                    user.setWebSocketChannel(webSocketChannel);
+
                 }
 
 

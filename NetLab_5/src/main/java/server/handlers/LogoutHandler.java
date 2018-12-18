@@ -4,7 +4,6 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
-import io.undertow.websockets.core.WebSockets;
 import org.json.JSONObject;
 import org.xnio.streams.ChannelOutputStream;
 import server.Message;
@@ -39,13 +38,15 @@ public class LogoutHandler extends AbstractRestHandler {
             user.setOnline(false);
             int mid = messages.add(new Message(user.getUsername() + " left", -1));
 
-            String jsonString = new JSONObject().put("id", mid).put("message", user.getUsername() + " left").put("author", -1).toString();
+            //!!!
+            /*String jsonString = new JSONObject().put("id", mid).put("message", user.getUsername() + " left").put("author", -1).toString();
             for (int i = 0; i < users.size(); i++) {
                 user = users.get(i);
                 if(user.isOnline() && user.getWebSocketChannel() != null) {
                     WebSockets.sendText(jsonString, user.getWebSocketChannel(), null);
                 }
-            }
+            }*/
+            //!!!
         }
         else
             exchange.setStatusCode(400);
