@@ -38,13 +38,7 @@ public class LogoutHandler extends AbstractRestHandler {
             //!!!
             String jsonString = new JSONObject().put("id", mid).put("message", user.getUsername() + " left").put("author", -1).toString();
             WebsocketWriter.write(users, messages, jsonString);
-            /*for (int i = 0; i < users.size(); i++) {
-                user = users.get(i);
-                if(user.isOnline() && user.getWebSocketChannel() != null) {
-                    WebSockets.sendText(jsonString, user.getWebSocketChannel(), null);
-                }
-            }*/
-            //!!!
+
         }
         else
             exchange.setStatusCode(400);

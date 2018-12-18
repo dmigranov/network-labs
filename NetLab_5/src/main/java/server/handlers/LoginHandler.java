@@ -52,21 +52,7 @@ public class LoginHandler extends AbstractRestHandler {
 
                     String jsonString = new JSONObject().put("id", mid).put("message", username + " logged in").put("author", -1).toString();
                     WebsocketWriter.write(users, messages, jsonString);
-                    /*for (int i = 0; i < users.size(); i++) {
-                        final User userIter = users.get(i);
-                        if(userIter.isOnline() && userIter.getWebSocketChannel() != null) {
-                            WebSockets.sendText(jsonString, userIter.getWebSocketChannel(), new WebSocketCallback<Void>() {
-                                @Override
-                                public void onError(WebSocketChannel webSocketChannel, Void o, Throwable throwable) {
-                                    user.setWentOffline(true);
-                                }
 
-                                @Override
-                                public void complete(WebSocketChannel webSocketChannel, Void o) {}
-                            });
-                        }
-                    }*/
-                    //!!!
                 }
                 else
                 {
