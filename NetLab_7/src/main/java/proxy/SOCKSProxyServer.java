@@ -70,6 +70,41 @@ public class SOCKSProxyServer
     private void read(SelectionKey key) throws IOException
     {
         ByteBuffer buf = ByteBuffer.allocate(bufSize);
+        SocketChannel keyChannel = (SocketChannel) key.channel();
+
+        ProxyContext fc = (ProxyContext) key.attachment();
+
+        if(fc == null)
+        {
+            fc = new ProxyContext(null, keyChannel);
+            key.attach(fc);
+        }
+
+        int readCount;
+        if ((readCount = keyChannel.read(buf)) == -1) {
+            return;
+        }
+
+        if (fc.getWhereToWrite() == null)
+        {
+            //читаем заголовки
+            //и отвечаем клиенту
+            byte[] headerBytes = buf.array();
+            int count = buf.position();
+            /*for (int i = 0; i < count; i++)
+                System.out.print(headerBytes[i] + " ");
+            System.out.println();*/
+            //сначала клиент посылает приветствие; у нас это 5 1 0, где 5 - версия, 1 - количество способов атентификации, 0 - без аутентификации
+        }
+        else
+        {
+            //как в форвардере
+        }
+
+
+
+
+
 
     }
 

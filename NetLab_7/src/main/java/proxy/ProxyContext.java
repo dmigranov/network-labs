@@ -8,6 +8,8 @@ public class ProxyContext {
     private SocketChannel whereToWrite;
     private SocketChannel fromWhere;
 
+    ProxyContext() {}
+
     ProxyContext(ByteBuffer toWrite, SocketChannel whereToWrite, SocketChannel fromWhere)
     {
         this.toWrite = toWrite;
