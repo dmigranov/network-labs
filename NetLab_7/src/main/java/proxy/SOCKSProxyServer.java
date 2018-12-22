@@ -90,20 +90,39 @@ public class SOCKSProxyServer
             //читаем заголовки
             //и отвечаем клиенту
             byte[] headerBytes = buf.array();
-            int count = buf.position();
-            /*for (int i = 0; i < count; i++)
-                System.out.print(headerBytes[i] + " ");
-            System.out.println();*/
-            //сначала клиент посылает приветствие; у нас это 5 1 0, где 5 - версия, 1 - количество способов атентификации, 0 - без аутентификации
+            int byteCount = buf.position();
+
+            int authenticationMethodsCount = headerBytes[1];
+            if(headerBytes[0] != 5)
+            {
+                //не та версия
+                return;
+            }
+
+            if(authenticationMethodsCount == byteCount - 2)
+            {
+                //это самое первое сообщение с методами аутентификации
+                //сначала клиент посылает приветствие; у нас это 5 1 0, где 5 - версия, 1 - количество способов атентификации, 0 - без аутентификации
+                ByteBuffer bb = ByteBuffer.allocate(2);
+                bb.put(new byte[] {5, 0});
+                bb.flip();
+                int writeCount = keyChannel.write(bb); //TODO: возможно (но маловероятно), что-то не запишется, поэтому возможно стоит поставить в селектор
+            }
+            else //connection request
+            {
+                for (int i = 0; i < byteCount; i++)
+                    System.out.print(headerBytes[i] + " ");
+                //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 -reserves
+                //1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 - порт
+                //NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
+                System.out.println();
+            }
+
         }
         else
         {
             //как в форвардере
         }
-
-
-
-
 
 
     }
@@ -112,7 +131,17 @@ public class SOCKSProxyServer
 
     }
 
-    private void write(SelectionKey key) {
+    private void write(SelectionKey key) throws IOException
+    {
+        ProxyContext fc = (ProxyContext) key.attachment();
+        ByteBuffer toWrite = fc.getToWrite();
+        SocketChannel keyChannel = (SocketChannel) key.channel();
 
+        if (toWrite != null) //!!!
+        {
+            keyChannel.write(toWrite);
+            toWrite.clear();
+        }
+        key.interestOps(SelectionKey.OP_READ);
     }
 }
