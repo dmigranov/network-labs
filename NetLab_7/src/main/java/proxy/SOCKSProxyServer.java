@@ -81,9 +81,16 @@ public class SOCKSProxyServer
             key.attach(pc);
         }
 
-        int readCount;
-        if ((readCount = keyChannel.read(buf)) == -1) {
-            return;
+        int readCount = 0;
+        try {
+            if ((readCount = keyChannel.read(buf)) == -1) {
+                return;
+            }
+        }
+        catch(IOException e)
+        {
+            //e.printStackTrace();
+            key.cancel();
         }
 
         if (pc.getWhereToWrite() == null)
@@ -92,6 +99,7 @@ public class SOCKSProxyServer
         }
         else
         {
+            //System.out.println(new String(buf.array(), "UTF-8"));
             SocketChannel remote = pc.getWhereToWrite();
 
             buf.flip();
@@ -102,6 +110,7 @@ public class SOCKSProxyServer
 
                 if(writeCount != readCount) {
                     System.out.println(readCount + " " + writeCount);
+                    pc.setBuffer(buf);
                     remote.register(key.selector(), SelectionKey.OP_WRITE, pc);
                 }
                 else {
