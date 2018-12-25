@@ -74,31 +74,27 @@ public class SOCKSProxyServer
         ByteBuffer buf = ByteBuffer.allocate(bufSize);
         SocketChannel keyChannel = (SocketChannel) key.channel();
 
-        ProxyContext fc = (ProxyContext) key.attachment();
-
-        if(fc == null)
+        ProxyContext pc = (ProxyContext) key.attachment();
+        if(pc == null)
         {
-            fc = new ProxyContext(null, keyChannel);
-            key.attach(fc);
+            pc = new ProxyContext(null, keyChannel);
+            key.attach(pc);
         }
 
         int readCount;
         if ((readCount = keyChannel.read(buf)) == -1) {
             return;
         }
-        System.out.println(readCount);
+        System.out.println(readCount + " " + keyChannel.getRemoteAddress() + " " + keyChannel.getLocalAddress());
 
-        if (fc.getWhereToWrite() == null)
+        if (pc.getWhereToWrite() == null)
         {
             parseHeaders(buf, key);
-
         }
         else
         {
-            //как в форвардере
+            System.out.println("HERE");
         }
-
-
     }
 
     private void connect(SelectionKey key) throws ClosedChannelException, IOException
@@ -110,15 +106,14 @@ public class SOCKSProxyServer
                 key.interestOps(SelectionKey.OP_WRITE);
             else
                 key.cancel();
-
         }
 
     }
 
     private void write(SelectionKey key) throws IOException
     {
-        ProxyContext fc = (ProxyContext) key.attachment();
-        ByteBuffer toWrite = fc.getToWrite();
+        ProxyContext pc = (ProxyContext) key.attachment();
+        ByteBuffer toWrite = pc.getToWrite();
         SocketChannel keyChannel = (SocketChannel) key.channel();
 
         if (toWrite != null) //!!!
@@ -129,9 +124,9 @@ public class SOCKSProxyServer
         key.interestOps(SelectionKey.OP_READ);
     }
 
-
     private void parseHeaders(ByteBuffer buf, SelectionKey key) throws IOException//читаем заголовки и отвечаем клиенту
     {
+        ProxyContext pc = (ProxyContext) key.attachment();
         SocketChannel keyChannel = (SocketChannel) key.channel();
         byte[] headerBytes = buf.array();
         int byteCount = buf.position();
@@ -157,9 +152,7 @@ public class SOCKSProxyServer
             for (int i = 0; i < byteCount; i++)
                 System.out.print(headerBytes[i] + " ");
             System.out.println();
-            //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 - reserves
-            //1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 80 - порт
-            //NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
+            //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 - reserves; 1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 80 - порт; NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
             if(headerBytes[1] != 1) {
                 //TODO: ответ клиенту!
                 return; //поддерживаем только TCP
@@ -169,6 +162,7 @@ public class SOCKSProxyServer
             {
                 SocketChannel remoteServer = SocketChannel.open();
                 remoteServer.configureBlocking(false);
+
                 byte[] address = new byte[4];
                 short port = ByteBuffer.wrap(new byte[]{headerBytes[8], headerBytes[9]}).getShort();
                 System.arraycopy(headerBytes, 4, address, 0, 4);
@@ -176,6 +170,8 @@ public class SOCKSProxyServer
                 {
                     remoteServer.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(remoteServer, keyChannel)); //
                 }
+                pc.setWhereToWrite(remoteServer);
+
                 byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт!
                 ByteBuffer bb = ByteBuffer.allocate(response.length);
                 bb.put(response);

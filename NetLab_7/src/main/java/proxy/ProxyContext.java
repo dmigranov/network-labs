@@ -37,6 +37,10 @@ public class ProxyContext {
         return whereToWrite;
     }
 
+    public void setWhereToWrite(SocketChannel whereToWrite) {
+        this.whereToWrite = whereToWrite;
+    }
+
     public SocketChannel getFromWhere() {
         return fromWhere;
     }
