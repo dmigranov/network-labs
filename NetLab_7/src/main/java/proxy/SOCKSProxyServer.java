@@ -85,7 +85,6 @@ public class SOCKSProxyServer
         if ((readCount = keyChannel.read(buf)) == -1) {
             return;
         }
-        System.out.println(readCount + " " + keyChannel.getRemoteAddress() + " " + keyChannel.getLocalAddress());
 
         if (pc.getWhereToWrite() == null)
         {
@@ -93,19 +92,17 @@ public class SOCKSProxyServer
         }
         else
         {
-
             SocketChannel remote = pc.getWhereToWrite();
 
             buf.flip();
-            //pc.setBuffer(buf);
+
             if (remote.isConnected() && readCount != 0) {
 
                 int writeCount = remote.write(buf);
 
-                System.out.println(readCount + " " + writeCount);
                 if(writeCount != readCount) {
-
-                    remote.register(key.selector(), SelectionKey.OP_WRITE, new ProxyContext(pc.getWhereToWrite(), pc.getFromWhere()));
+                    System.out.println(readCount + " " + writeCount);
+                    remote.register(key.selector(), SelectionKey.OP_WRITE, pc);
                 }
                 else {
                     buf.clear();
@@ -126,8 +123,8 @@ public class SOCKSProxyServer
         if (!keyChannel.isConnected() && keyChannel.finishConnect()) {
             if (((ProxyContext) key.attachment()).getToWrite() != null)
                 key.interestOps(SelectionKey.OP_WRITE);
-            else
-                key.cancel();
+            //else
+                //key.cancel();
         }
 
     }
@@ -171,9 +168,9 @@ public class SOCKSProxyServer
         }
         else //connection request
         {
-            for (int i = 0; i < byteCount; i++)
+            /*for (int i = 0; i < byteCount; i++)
                 System.out.print(headerBytes[i] + " ");
-            System.out.println();
+            System.out.println();*/
             //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 - reserves; 1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 80 - порт; NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
             if(headerBytes[1] != 1) {
                 //TODO: ответ клиенту!
