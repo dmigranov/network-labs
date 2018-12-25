@@ -1,13 +1,15 @@
 package proxy;
 
 
-import org.xbill.DNS.ResolverConfig;
+import org.xbill.DNS.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -15,11 +17,19 @@ public class SOCKSProxyServer
 {
     private int port;
     private static final int bufSize = 1024;
-    private DatagramChannel dnsServer;
-    private String dnsServers[] = ResolverConfig.getCurrentConfig().servers();
+    private DatagramChannel dnsServerChannel;
+    private InetSocketAddress dnsServerAddress;
     SOCKSProxyServer(int port)
     {
         this.port = port;
+        String dnsServers[] = ResolverConfig.getCurrentConfig().servers();
+        try {
+            dnsServerAddress = new InetSocketAddress(InetAddress.getByName(dnsServers[0]), 53);
+        }
+        catch(UnknownHostException e)
+        {
+
+        }
     }
 
 
@@ -27,16 +37,16 @@ public class SOCKSProxyServer
     {
         try (Selector selector = Selector.open();
              ServerSocketChannel local = ServerSocketChannel.open();
-             DatagramChannel dnsServer = DatagramChannel.open())
+             DatagramChannel dnsServerChannel = DatagramChannel.open())
         {
             local.bind(new InetSocketAddress("localhost", port));
             local.configureBlocking(false);
             local.register(selector, SelectionKey.OP_ACCEPT);
 
-            this.dnsServer = dnsServer;
-
-            dnsServer.configureBlocking(false);
-            dnsServer.register(selector, SelectionKey.OP_READ);
+            this.dnsServerChannel = dnsServerChannel;
+            dnsServerChannel.connect(dnsServerAddress);
+            dnsServerChannel.configureBlocking(false);
+            dnsServerChannel.register(selector, SelectionKey.OP_READ);
 
 
             while (true)
@@ -82,56 +92,68 @@ public class SOCKSProxyServer
     private void read(SelectionKey key) throws IOException
     {
         ByteBuffer buf = ByteBuffer.allocate(bufSize);
-        SocketChannel keyChannel = (SocketChannel) key.channel();
-
-        ProxyContext pc = (ProxyContext) key.attachment();
-        if(pc == null)
+        Channel channel = key.channel();
+        if (channel == dnsServerChannel)
         {
-            pc = new ProxyContext(null, keyChannel);
-            key.attach(pc);
-        }
+            //DatagramChannel keyChannel = (DatagramChannel) key.channel();
+            dnsServerChannel.read(buf); //а если прочитает не всё?
+            Message message = new Message(buf.array());
+            Record[] answer = message.getSectionArray(Section.ANSWER);
 
-        int readCount = 0;
-        try {
-            if ((readCount = keyChannel.read(buf)) == -1) {
-                return;
+            for (Record r : answer)
+            {
+                ARecord a = (ARecord)r;
+                System.out.println(a.getAddress());
             }
-        }
-        catch(IOException e)
-        {
-            //e.printStackTrace();
-            key.cancel();
-        }
-
-        if (pc.getWhereToWrite() == null)
-        {
-            parseHeaders(buf, key);
         }
         else
         {
-            //System.out.println(new String(buf.array(), "UTF-8"));
-            SocketChannel remote = pc.getWhereToWrite();
 
-            buf.flip();
+            SocketChannel keyChannel = (SocketChannel) key.channel();
 
-            if (remote.isConnected() && readCount != 0) {
-
-                int writeCount = remote.write(buf);
-
-                if(writeCount != readCount) {
-                    System.out.println(readCount + " " + writeCount);
-                    pc.setBuffer(buf);
-                    remote.register(key.selector(), SelectionKey.OP_WRITE, pc);
-                }
-                else {
-                    buf.clear();
-                    remote.register(key.selector(), SelectionKey.OP_READ, new ProxyContext(pc.getFromWhere(), pc.getWhereToWrite()));
-                }
-            } else {
-
-                remote.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(buf, pc.getFromWhere(), pc.getWhereToWrite()));
+            ProxyContext pc = (ProxyContext) key.attachment();
+            if (pc == null) {
+                pc = new ProxyContext(null, keyChannel);
+                key.attach(pc);
             }
 
+            int readCount = 0;
+            try {
+                if ((readCount = keyChannel.read(buf)) == -1) {
+                    return;
+                }
+            } catch (IOException e) {
+                //e.printStackTrace();
+                key.cancel();
+            }
+
+            //System.out.println(new String(buf.array(), "UTF-8"));
+            if (pc.getWhereToWrite() == null) {
+                parseHeaders(buf, key);
+            } else {
+                //System.out.println(new String(buf.array(), "UTF-8"));
+                SocketChannel remote = pc.getWhereToWrite();
+
+                buf.flip();
+
+                if (remote.isConnected() && readCount != 0) {
+
+                    int writeCount = remote.write(buf);
+
+                    if (writeCount != readCount) {
+                        System.out.println(readCount + " " + writeCount);
+                        pc.setBuffer(buf);
+                        remote.register(key.selector(), SelectionKey.OP_WRITE, pc);
+                    } else {
+                        buf.clear();
+                        remote.register(key.selector(), SelectionKey.OP_READ, new ProxyContext(pc.getFromWhere(), pc.getWhereToWrite()));
+                    }
+                } else {
+
+                    remote.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(buf, pc.getFromWhere(), pc.getWhereToWrite()));
+                }
+
+            }
         }
     }
 
@@ -224,7 +246,17 @@ public class SOCKSProxyServer
                 System.arraycopy(headerBytes, 5, domainBytes, 0, len);
                 String domainName = new String(domainBytes, "UTF-8");
 
+                Message message = new Message();
+                Record record = Record.newRecord(new Name(domainName + "."), Type.A, DClass.IN);
+                message.addRecord(record, Section.QUESTION);
+                message.getHeader().setFlag(Flags.RD);
 
+
+                byte[] messageBytes = message.toWire();
+                ByteBuffer bb = ByteBuffer.allocate(messageBytes.length);
+                bb.put(messageBytes);
+                bb.flip();
+                dnsServerChannel.send(bb, dnsServerAddress);
             }
 
 
