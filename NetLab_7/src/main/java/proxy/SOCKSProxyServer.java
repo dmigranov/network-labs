@@ -1,6 +1,8 @@
 package proxy;
 
 
+import org.xbill.DNS.ResolverConfig;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -13,7 +15,8 @@ public class SOCKSProxyServer
 {
     private int port;
     private static final int bufSize = 1024;
-
+    private DatagramChannel dnsServer;
+    private String dnsServers[] = ResolverConfig.getCurrentConfig().servers();
     SOCKSProxyServer(int port)
     {
         this.port = port;
@@ -23,11 +26,18 @@ public class SOCKSProxyServer
     public void run()
     {
         try (Selector selector = Selector.open();
-             ServerSocketChannel local = ServerSocketChannel.open())
+             ServerSocketChannel local = ServerSocketChannel.open();
+             DatagramChannel dnsServer = DatagramChannel.open())
         {
             local.bind(new InetSocketAddress("localhost", port));
             local.configureBlocking(false);
             local.register(selector, SelectionKey.OP_ACCEPT);
+
+            this.dnsServer = dnsServer;
+
+            dnsServer.configureBlocking(false);
+            dnsServer.register(selector, SelectionKey.OP_READ);
+
 
             while (true)
             {
