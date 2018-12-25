@@ -107,7 +107,7 @@ public class SOCKSProxyServer
             InetAddress inetAddress = ((ARecord)answer[0]).getAddress(); //illegal cast?
             byte[] addressBytes = inetAddress.getAddress();
 
-            Selector selector =  key.selector();
+            /*Selector selector =  key.selector();
             Iterator<SelectionKey> iter = selector.keys().iterator();
 
             while (iter.hasNext())
@@ -133,7 +133,8 @@ public class SOCKSProxyServer
                     int writeCount = pc.getFromWhere().write(bb);
                 }
 
-            }
+            }*/
+            //TODO: 1) Отправиь подтверждение клиенту; 2) Каким-то образом добавить в нужный Аттачмент-Контекст найденый и открытый канал (возможно, мапа?!!)
 
         }
         else
@@ -279,7 +280,6 @@ public class SOCKSProxyServer
                 Record record = Record.newRecord(new Name(domainName + "."), Type.A, DClass.IN);
                 message.addRecord(record, Section.QUESTION);
                 message.getHeader().setFlag(Flags.RD);
-
 
                 byte[] messageBytes = message.toWire();
                 ByteBuffer bb = ByteBuffer.allocate(messageBytes.length);
