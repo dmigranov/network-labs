@@ -93,10 +93,11 @@ public class SOCKSProxyServer
         }
         else
         {
-            System.out.println(new String(buf.array(), "UTF-8"));
+
             SocketChannel remote = pc.getWhereToWrite();
 
             buf.flip();
+            //pc.setBuffer(buf);
             if (remote.isConnected() && readCount != 0) {
 
                 int writeCount = remote.write(buf);
@@ -112,7 +113,7 @@ public class SOCKSProxyServer
                 }
             } else {
 
-                remote.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(pc.getFromWhere(), pc.getWhereToWrite()));
+                remote.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(buf, pc.getFromWhere(), pc.getWhereToWrite()));
             }
 
         }
