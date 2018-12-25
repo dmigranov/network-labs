@@ -93,7 +93,28 @@ public class SOCKSProxyServer
         }
         else
         {
-            System.out.println("HERE");
+            System.out.println(new String(buf.array(), "UTF-8"));
+            SocketChannel remote = pc.getWhereToWrite();
+
+            buf.flip();
+            if (remote.isConnected() && readCount != 0) {
+
+                int writeCount = remote.write(buf);
+
+                System.out.println(readCount + " " + writeCount);
+                if(writeCount != readCount) {
+
+                    remote.register(key.selector(), SelectionKey.OP_WRITE, new ProxyContext(pc.getWhereToWrite(), pc.getFromWhere()));
+                }
+                else {
+                    buf.clear();
+                    remote.register(key.selector(), SelectionKey.OP_READ, new ProxyContext(pc.getFromWhere(), pc.getWhereToWrite()));
+                }
+            } else {
+
+                remote.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(pc.getFromWhere(), pc.getWhereToWrite()));
+            }
+
         }
     }
 
