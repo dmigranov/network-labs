@@ -90,65 +90,7 @@ public class SOCKSProxyServer
 
         if (fc.getWhereToWrite() == null)
         {
-            //читаем заголовки
-            //и отвечаем клиенту
-            byte[] headerBytes = buf.array();
-            int byteCount = buf.position();
-
-            int authenticationMethodsCount = headerBytes[1];
-            if(headerBytes[0] != 5)
-            {
-                //не та версия
-                return;
-            }
-
-            if(authenticationMethodsCount == byteCount - 2)
-            {
-                //это самое первое сообщение с методами аутентификации
-                //сначала клиент посылает приветствие; у нас это 5 1 0, где 5 - версия, 1 - количество способов атентификации, 0 - без аутентификации
-                ByteBuffer bb = ByteBuffer.allocate(2);
-                bb.put(new byte[] {5, 0});
-                bb.flip();
-                int writeCount = keyChannel.write(bb); //TODO: возможно (но маловероятно), что-то не запишется, поэтому возможно стоит поставить в селектор
-            }
-            else //connection request
-            {
-                for (int i = 0; i < byteCount; i++)
-                    System.out.print(headerBytes[i] + " ");
-                System.out.println();
-                //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 -reserves
-                //1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 80 - порт
-                //NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
-                if(headerBytes[1] != 1) {
-                    //TODO: ответ клиенту!
-                    return; //поддерживаем только TCP
-                }
-
-                if(headerBytes[3] == 1) //IPv4, подключаемся туда
-                {
-                    SocketChannel remoteServer = SocketChannel.open();
-                    remoteServer.configureBlocking(false);
-                    byte[] address = new byte[4];
-                    short port = ByteBuffer.wrap(new byte[]{headerBytes[8], headerBytes[9]}).getShort();
-                    System.arraycopy(headerBytes, 4, address, 0, 4);
-                    if (!remoteServer.connect(new InetSocketAddress(InetAddress.getByAddress(address), port)))
-                    {
-                        remoteServer.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(remoteServer, keyChannel)); //
-                    }
-                    byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт!
-                    ByteBuffer bb = ByteBuffer.allocate(response.length);
-                    bb.put(response);
-                    bb.flip();
-                    int writeCount = keyChannel.write(bb);
-                }
-                else if(headerBytes[3] == 3) //доменное имя, резолвим
-                {
-                    //TODO: resolve and ...
-                }
-
-
-
-            }
+            parseHeaders(buf, key);
 
         }
         else
@@ -186,4 +128,66 @@ public class SOCKSProxyServer
         }
         key.interestOps(SelectionKey.OP_READ);
     }
+
+
+    private void parseHeaders(ByteBuffer buf, SelectionKey key) throws IOException//читаем заголовки и отвечаем клиенту
+    {
+        SocketChannel keyChannel = (SocketChannel) key.channel();
+        byte[] headerBytes = buf.array();
+        int byteCount = buf.position();
+
+        int authenticationMethodsCount = headerBytes[1];
+        if(headerBytes[0] != 5)
+        {
+            //не та версия
+            return;
+        }
+
+        if(authenticationMethodsCount == byteCount - 2)
+        {
+            //это самое первое сообщение с методами аутентификации
+            //сначала клиент посылает приветствие; у нас это 5 1 0, где 5 - версия, 1 - количество способов атентификации, 0 - без аутентификации
+            ByteBuffer bb = ByteBuffer.allocate(2);
+            bb.put(new byte[] {5, 0});
+            bb.flip();
+            int writeCount = keyChannel.write(bb); //TODO: возможно (но маловероятно), что-то не запишется, поэтому возможно стоит поставить в селектор
+        }
+        else //connection request
+        {
+            for (int i = 0; i < byteCount; i++)
+                System.out.print(headerBytes[i] + " ");
+            System.out.println();
+            //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 - reserves
+            //1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 80 - порт
+            //NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
+            if(headerBytes[1] != 1) {
+                //TODO: ответ клиенту!
+                return; //поддерживаем только TCP
+            }
+
+            if(headerBytes[3] == 1) //IPv4, подключаемся туда
+            {
+                SocketChannel remoteServer = SocketChannel.open();
+                remoteServer.configureBlocking(false);
+                byte[] address = new byte[4];
+                short port = ByteBuffer.wrap(new byte[]{headerBytes[8], headerBytes[9]}).getShort();
+                System.arraycopy(headerBytes, 4, address, 0, 4);
+                if (!remoteServer.connect(new InetSocketAddress(InetAddress.getByAddress(address), port)))
+                {
+                    remoteServer.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(remoteServer, keyChannel)); //
+                }
+                byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт!
+                ByteBuffer bb = ByteBuffer.allocate(response.length);
+                bb.put(response);
+                bb.flip();
+                int writeCount = keyChannel.write(bb);
+            }
+            else if(headerBytes[3] == 3) //доменное имя, резолвим
+            {
+                //TODO: resolve and ...
+            }
+
+        }
+    }
 }
+
