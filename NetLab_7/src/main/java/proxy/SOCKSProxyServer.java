@@ -93,6 +93,7 @@ public class SOCKSProxyServer
     {
         ByteBuffer buf = ByteBuffer.allocate(bufSize);
         Channel channel = key.channel();
+
         if (channel == dnsServerChannel)
         {
             //DatagramChannel keyChannel = (DatagramChannel) key.channel();
@@ -100,15 +101,43 @@ public class SOCKSProxyServer
             Message message = new Message(buf.array());
             Record[] answer = message.getSectionArray(Section.ANSWER);
 
-            for (Record r : answer)
+
+            String name = answer[0].getName().toString();
+            name = name.substring(0, name.length() - 1);
+            InetAddress inetAddress = ((ARecord)answer[0]).getAddress(); //illegal cast?
+            byte[] addressBytes = inetAddress.getAddress();
+
+            Selector selector =  key.selector();
+            Iterator<SelectionKey> iter = selector.keys().iterator();
+
+            while (iter.hasNext())
             {
-                ARecord a = (ARecord)r;
-                System.out.println(a.getAddress());
+                //Channel channelIter = keyIter.channel();
+                SelectionKey keyIter = iter.next();
+                if(keyIter.attachment() != null && ((ProxyContext)keyIter.attachment()).getDomainName().equals(name))
+                {
+                    ProxyContext pc = (ProxyContext)keyIter.attachment();
+                    SocketChannel remoteServer = SocketChannel.open();
+                    remoteServer.configureBlocking(false);
+
+                    if (!remoteServer.connect(new InetSocketAddress(InetAddress.getByAddress(addressBytes), port)))
+                    {
+                        remoteServer.register(selector, SelectionKey.OP_CONNECT, new ProxyContext(remoteServer, pc.getFromWhere())); //
+                    }
+                    pc.setWhereToWrite(remoteServer);
+
+                    byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт!
+                    ByteBuffer bb = ByteBuffer.allocate(response.length);
+                    bb.put(response);
+                    bb.flip();
+                    int writeCount = pc.getFromWhere().write(bb);
+                }
+
             }
+
         }
         else
         {
-
             SocketChannel keyChannel = (SocketChannel) key.channel();
 
             ProxyContext pc = (ProxyContext) key.attachment();
@@ -131,7 +160,7 @@ public class SOCKSProxyServer
             if (pc.getWhereToWrite() == null) {
                 parseHeaders(buf, key);
             } else {
-                //System.out.println(new String(buf.array(), "UTF-8"));
+                System.out.println(new String(buf.array(), "UTF-8"));
                 SocketChannel remote = pc.getWhereToWrite();
 
                 buf.flip();
@@ -257,6 +286,7 @@ public class SOCKSProxyServer
                 bb.put(messageBytes);
                 bb.flip();
                 dnsServerChannel.send(bb, dnsServerAddress);
+                pc.setDomainName(domainName);
             }
 
 
