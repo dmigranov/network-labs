@@ -218,8 +218,15 @@ public class SOCKSProxyServer
             }
             else if(headerBytes[3] == 3) //доменное имя, резолвим
             {
-                //TODO: resolve and ...
+                //достаём доменное имя
+                byte len = headerBytes[4];
+                byte[] domainBytes = new byte[len];
+                System.arraycopy(headerBytes, 5, domainBytes, 0, len);
+                String domainName = new String(domainBytes, "UTF-8");
+
+
             }
+
 
         }
     }
