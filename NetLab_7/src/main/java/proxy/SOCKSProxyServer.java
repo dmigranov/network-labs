@@ -2,6 +2,7 @@ package proxy;
 
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
@@ -61,6 +62,7 @@ public class SOCKSProxyServer
 
     private void accept(SelectionKey key) throws ClosedChannelException, IOException
     {
+
         SocketChannel client = ((ServerSocketChannel)key.channel()).accept();
         client.configureBlocking(false);
         //подключиться к удалённому серверу, как в форвардере, пока не можеи, потому ждём...
@@ -84,6 +86,7 @@ public class SOCKSProxyServer
         if ((readCount = keyChannel.read(buf)) == -1) {
             return;
         }
+        System.out.println(readCount);
 
         if (fc.getWhereToWrite() == null)
         {
@@ -112,10 +115,33 @@ public class SOCKSProxyServer
             {
                 for (int i = 0; i < byteCount; i++)
                     System.out.print(headerBytes[i] + " ");
-                //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 -reserves
-                //1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 - порт
-                //NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
                 System.out.println();
+                //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 -reserves
+                //1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 80 - порт
+                //NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
+                if(headerBytes[1] != 1)
+                    return; //поддерживаем только TCP
+
+                if(headerBytes[3] == 1) //IPv4, подключаемся туда
+                {
+                    SocketChannel remoteServer = SocketChannel.open();
+                    remoteServer.configureBlocking(false);
+                    byte[] address = new byte[4];
+                    short port = ByteBuffer.wrap(new byte[]{headerBytes[8], headerBytes[9]}).getShort();
+                    System.out.println(port);
+                    System.arraycopy(headerBytes, 4, address, 0, 4);
+                    if (!remoteServer.connect(new InetSocketAddress(InetAddress.getByAddress(address), port)))
+                    {
+                        remoteServer.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(remoteServer, keyChannel)); //
+                    }
+                }
+                else if(headerBytes[3] == 3) //доменное имя, резолвим
+                {
+                    //TODO: resolve and ...
+                }
+
+
+
             }
 
         }
@@ -127,7 +153,17 @@ public class SOCKSProxyServer
 
     }
 
-    private void connect(SelectionKey key) {
+    private void connect(SelectionKey key) throws ClosedChannelException, IOException
+    {
+        SocketChannel keyChannel = (SocketChannel) key.channel();
+
+        if (!keyChannel.isConnected() && keyChannel.finishConnect()) {
+            if (((ProxyContext) key.attachment()).getToWrite() != null)
+                key.interestOps(SelectionKey.OP_WRITE);
+            else
+                key.cancel();
+
+        }
 
     }
 
