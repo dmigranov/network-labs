@@ -10,7 +10,9 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.channels.spi.AbstractSelectableChannel;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 public class SOCKSProxyServer
@@ -19,6 +21,7 @@ public class SOCKSProxyServer
     private static final int bufSize = 1024;
     private DatagramChannel dnsServerChannel;
     private InetSocketAddress dnsServerAddress;
+    private Map<String, InetAddress> resolvedNames = new HashMap<>();
     SOCKSProxyServer(int port)
     {
         this.port = port;
@@ -96,46 +99,7 @@ public class SOCKSProxyServer
 
         if (channel == dnsServerChannel)
         {
-            //DatagramChannel keyChannel = (DatagramChannel) key.channel();
-            dnsServerChannel.read(buf); //а если прочитает не всё?
-            Message message = new Message(buf.array());
-            Record[] answer = message.getSectionArray(Section.ANSWER);
-
-
-            String name = answer[0].getName().toString();
-            name = name.substring(0, name.length() - 1);
-            InetAddress inetAddress = ((ARecord)answer[0]).getAddress(); //illegal cast?
-            byte[] addressBytes = inetAddress.getAddress();
-
-            /*Selector selector =  key.selector();
-            Iterator<SelectionKey> iter = selector.keys().iterator();
-
-            while (iter.hasNext())
-            {
-                //Channel channelIter = keyIter.channel();
-                SelectionKey keyIter = iter.next();
-                if(keyIter.attachment() != null && ((ProxyContext)keyIter.attachment()).getDomainName().equals(name))
-                {
-                    ProxyContext pc = (ProxyContext)keyIter.attachment();
-                    SocketChannel remoteServer = SocketChannel.open();
-                    remoteServer.configureBlocking(false);
-
-                    if (!remoteServer.connect(new InetSocketAddress(InetAddress.getByAddress(addressBytes), port)))
-                    {
-                        remoteServer.register(selector, SelectionKey.OP_CONNECT, new ProxyContext(remoteServer, pc.getFromWhere())); //
-                    }
-                    pc.setWhereToWrite(remoteServer);
-
-                    byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт!
-                    ByteBuffer bb = ByteBuffer.allocate(response.length);
-                    bb.put(response);
-                    bb.flip();
-                    int writeCount = pc.getFromWhere().write(bb);
-                }
-
-            }*/
-            //TODO: 1) Отправиь подтверждение клиенту; 2) Каким-то образом добавить в нужный Аттачмент-Контекст найденый и открытый канал (возможно, мапа?!!)
-
+            processDNSResponse(buf);
         }
         else
         {
@@ -157,11 +121,10 @@ public class SOCKSProxyServer
                 key.cancel();
             }
 
-            //System.out.println(new String(buf.array(), "UTF-8"));
             if (pc.getWhereToWrite() == null) {
                 parseHeaders(buf, key);
             } else {
-                System.out.println(new String(buf.array(), "UTF-8"));
+                //System.out.println(new String(buf.array(), "UTF-8"));
                 SocketChannel remote = pc.getWhereToWrite();
 
                 buf.flip();
@@ -197,7 +160,6 @@ public class SOCKSProxyServer
             //else
                 //key.cancel();
         }
-
     }
 
     private void write(SelectionKey key) throws IOException
@@ -230,8 +192,7 @@ public class SOCKSProxyServer
 
         if(authenticationMethodsCount == byteCount - 2)
         {
-            //это самое первое сообщение с методами аутентификации
-            //сначала клиент посылает приветствие; у нас это 5 1 0, где 5 - версия, 1 - количество способов атентификации, 0 - без аутентификации
+            //это самое первое сообщение с методами аутентификации: сначала клиент посылает приветствие; у нас это 5 1 0, где 5 - версия, 1 - количество способов атентификации, 0 - без аутентификации
             ByteBuffer bb = ByteBuffer.allocate(2);
             bb.put(new byte[] {5, 0});
             bb.flip();
@@ -239,13 +200,10 @@ public class SOCKSProxyServer
         }
         else //connection request
         {
-            /*for (int i = 0; i < byteCount; i++)
-                System.out.print(headerBytes[i] + " ");
-            System.out.println();*/
             //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 - reserves; 1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 80 - порт; NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
             if(headerBytes[1] != 1) {
                 //TODO: ответ клиенту!
-                return; //поддерживаем только TCP
+                return; //по условию задачи, поддерживаем только TCP
             }
 
             if(headerBytes[3] == 1) //IPv4, подключаемся туда
@@ -291,6 +249,52 @@ public class SOCKSProxyServer
 
 
         }
+    }
+
+    private void processDNSResponse(ByteBuffer buf) throws IOException
+    {
+        //DatagramChannel keyChannel = (DatagramChannel) key.channel();
+        dnsServerChannel.read(buf); //а если прочитает не всё?
+        Message message = new Message(buf.array());
+        Record[] answer = message.getSectionArray(Section.ANSWER);
+
+
+        String name = answer[0].getName().toString();
+        name = name.substring(0, name.length() - 1);
+        InetAddress inetAddress = ((ARecord)answer[0]).getAddress(); //illegal cast?
+        byte[] addressBytes = inetAddress.getAddress();
+
+            /*Selector selector =  key.selector();
+            Iterator<SelectionKey> iter = selector.keys().iterator();
+
+            while (iter.hasNext())
+            {
+                //Channel channelIter = keyIter.channel();
+                SelectionKey keyIter = iter.next();
+                if(keyIter.attachment() != null && ((ProxyContext)keyIter.attachment()).getDomainName().equals(name))
+                {
+                    ProxyContext pc = (ProxyContext)keyIter.attachment();
+                    SocketChannel remoteServer = SocketChannel.open();
+                    remoteServer.configureBlocking(false);
+
+                    if (!remoteServer.connect(new InetSocketAddress(InetAddress.getByAddress(addressBytes), port)))
+                    {
+                        remoteServer.register(selector, SelectionKey.OP_CONNECT, new ProxyContext(remoteServer, pc.getFromWhere())); //
+                    }
+                    pc.setWhereToWrite(remoteServer);
+
+                    byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт!
+                    ByteBuffer bb = ByteBuffer.allocate(response.length);
+                    bb.put(response);
+                    bb.flip();
+                    int writeCount = pc.getFromWhere().write(bb);
+                }
+
+            }*/
+        //TODO: 1) Отправиь ответ клиенту; 2) Каким-то образом добавить в нужный Аттачмент-Контекст найденый и открытый канал (возможно, мапа?!!)
+
+        resolvedNames.put(name, InetAddress.getByAddress(addressBytes));
+        //подконнектиться, наверное, прямо сейчас не можеи, так как не знаем порта?
     }
 }
 
