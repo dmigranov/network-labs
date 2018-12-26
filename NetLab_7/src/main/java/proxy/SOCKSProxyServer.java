@@ -3,14 +3,12 @@ package proxy;
 
 import org.xbill.DNS.*;
 
-import java.awt.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.nio.channels.spi.AbstractSelectableChannel;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,7 +34,6 @@ public class SOCKSProxyServer
             System.exit(10);
         }
     }
-
 
     public void run()
     {
@@ -84,11 +81,9 @@ public class SOCKSProxyServer
 
     private void accept(SelectionKey key) throws ClosedChannelException, IOException
     {
-
         SocketChannel client = ((ServerSocketChannel)key.channel()).accept();
         client.configureBlocking(false);
-        //подключиться к удалённому серверу, как в форвардере, пока не можеи, потому ждём...
-        client.register(key.selector(), SelectionKey.OP_READ);
+        client.register(key.selector(), SelectionKey.OP_READ);  //подключиться к удалённому серверу, как в форвардере, пока не можеи (не знаем куда), потому ждём...
     }
 
     private void read(SelectionKey key) throws IOException
@@ -103,20 +98,17 @@ public class SOCKSProxyServer
         else
         {
             SocketChannel keyChannel = (SocketChannel) key.channel();
-
             ProxyContext pc = (ProxyContext) key.attachment();
             if (pc == null) {
                 pc = new ProxyContext(null, keyChannel);
                 key.attach(pc);
             }
-
             int readCount = 0;
             try {
                 if ((readCount = keyChannel.read(buf)) == -1) {
                     return;
                 }
             } catch (IOException e) {
-                //e.printStackTrace();
                 key.cancel();
                 return;
             }
@@ -138,7 +130,6 @@ public class SOCKSProxyServer
                         key.cancel();
                         return;
                     }
-
                     if (writeCount != readCount) {
                         System.out.println(readCount + " " + writeCount);
                         pc.setBuffer(buf);
@@ -148,7 +139,6 @@ public class SOCKSProxyServer
                         remote.register(key.selector(), SelectionKey.OP_READ, new ProxyContext(pc.getFromWhere(), pc.getWhereToWrite()));
                     }
                 } else {
-
                     remote.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(buf, pc.getFromWhere(), pc.getWhereToWrite()));
                 }
             }

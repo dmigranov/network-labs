@@ -8,7 +8,6 @@ public class ProxyContext {
     private SocketChannel whereToWrite;
     private SocketChannel fromWhere;
     private short destinationPort;
-    //private String domainName = null;
 
     ProxyContext() {}
 
@@ -54,12 +53,4 @@ public class ProxyContext {
     public void setDestinationPort(short destinationPort) {
         this.destinationPort = destinationPort;
     }
-
-    /*public void setDomainName(String domainName) {
-        this.domainName = domainName;
-    }
-
-    public String getDomainName() {
-        return domainName;
-    }*/
 }
