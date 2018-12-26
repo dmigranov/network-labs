@@ -262,7 +262,7 @@ public class SOCKSProxyServer
             {
                 CNAMEName = r.getName().toString();
                 if(name == null)
-                    name = CNAMEName.substring(0, CNAMEName.length() - 1);;
+                    name = CNAMEName.substring(0, CNAMEName.length() - 1);
                 CNAMEAlias = ((CNAMERecord)r).getAlias().toString();
 
             }
@@ -290,28 +290,13 @@ public class SOCKSProxyServer
 
         if (inetAddress == null)
         {
-            Message messageBack = new Message();
-            Record record = Record.newRecord(new Name(name + "."), Type.A, DClass.IN);
-            message.addRecord(record, Section.QUESTION);
-            message.getHeader().setFlag(Flags.RD);
-
-            byte[] messageBytes = message.toWire();
-            ByteBuffer bb = ByteBuffer.allocate(messageBytes.length);
-            bb.put(messageBytes);
-            bb.flip();
-            dnsServerChannel.send(bb, dnsServerAddress);
+            namesToBeResolved.remove(name);
             return;
         }
 
-
         byte[] addressBytes;
-        //try {
-            addressBytes = inetAddress.getAddress();
-        /*}catch(NullPointerException e)
-        {
-            namesToBeResolved.remove(name);
-            return;
-        }*/
+
+        addressBytes = inetAddress.getAddress();
 
         Iterator<Map.Entry<String, ProxyContext>> it = namesToBeResolved.entrySet().iterator();
         while(it.hasNext())
