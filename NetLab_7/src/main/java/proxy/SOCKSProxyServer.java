@@ -256,16 +256,6 @@ public class SOCKSProxyServer
 
         String name = null, CNAMEalias = null;
         InetAddress inetAddress = null;
-        /*for (Record r : answer)
-        {
-            if(r.getType() == Type.A)
-            {
-                name = r.getName().toString();
-                name = name.substring(0, name.length() - 1);
-                inetAddress = ((ARecord)r).getAddress();
-                break;
-            }
-        }*/
 
         //CName и A!
         for (Record r : answer)
@@ -284,18 +274,28 @@ public class SOCKSProxyServer
             {
                 String Aalias = r.getName().toString();
 
-                if(Aalias.equals(CNAMEalias))
+                if(CNAMEalias != null && Aalias.equals(CNAMEalias))
                 {
                     inetAddress = ((ARecord) r).getAddress();
                     break;
                 }
-
+                else if (CNAMEalias == null)
+                {
+                    name = r.getName().toString();
+                    name = name.substring(0, name.length() - 1);
+                    inetAddress = ((ARecord) r).getAddress();
+                    break;
+                }
             }
         }
 
-
-
-        byte[] addressBytes = inetAddress.getAddress();
+        byte[] addressBytes;
+        try {
+            addressBytes = inetAddress.getAddress();
+        }catch(NullPointerException e)
+        {
+            return;
+        }
 
         Iterator<Map.Entry<String, ProxyContext>> it = namesToBeResolved.entrySet().iterator();
         while(it.hasNext())
