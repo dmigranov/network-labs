@@ -17,7 +17,7 @@ import java.util.Set;
 public class SOCKSProxyServer
 {
     private int port;
-    private static final int bufSize = 1024;
+    private static final int bufSize = 8192;
     private DatagramChannel dnsServerChannel;
     private InetSocketAddress dnsServerAddress;
     private Map<String, ProxyContext> namesToBeResolved = new HashMap<>();
@@ -106,6 +106,7 @@ public class SOCKSProxyServer
             int readCount = 0;
             try {
                 if ((readCount = keyChannel.read(buf)) == -1) {
+                    key.cancel(); //?
                     return;
                 }
             } catch (IOException e) {
@@ -253,9 +254,9 @@ public class SOCKSProxyServer
         Message message = new Message(buf.array());
         Record[] answer = message.getSectionArray(Section.ANSWER);
 
-        String name = null;
+        String name = null, CNAMEalias = null;
         InetAddress inetAddress = null;
-        for (Record r : answer)
+        /*for (Record r : answer)
         {
             if(r.getType() == Type.A)
             {
@@ -264,7 +265,35 @@ public class SOCKSProxyServer
                 inetAddress = ((ARecord)r).getAddress();
                 break;
             }
+        }*/
+
+        //CName и A!
+        for (Record r : answer)
+        {
+            if(r.getType() == Type.CNAME)
+            {
+                name = r.getName().toString();
+                name = name.substring(0, name.length() - 1);
+                CNAMEalias = ((CNAMERecord)r).getAlias().toString();
+                break;
+            }
         }
+        for (Record r : answer)
+        {
+            if(r.getType() == Type.A)
+            {
+                String Aalias = r.getName().toString();
+
+                if(Aalias.equals(CNAMEalias))
+                {
+                    inetAddress = ((ARecord) r).getAddress();
+                    break;
+                }
+
+            }
+        }
+
+
 
         byte[] addressBytes = inetAddress.getAddress();
 
