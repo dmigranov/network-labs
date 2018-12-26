@@ -153,8 +153,6 @@ public class SOCKSProxyServer
         if (!keyChannel.isConnected() && keyChannel.finishConnect()) {
             if (((ProxyContext) key.attachment()).getToWrite() != null)
                 key.interestOps(SelectionKey.OP_WRITE);
-            //else
-                //key.cancel();
         }
     }
 
@@ -192,13 +190,13 @@ public class SOCKSProxyServer
             ByteBuffer bb = ByteBuffer.allocate(2);
             bb.put(new byte[] {5, 0});
             bb.flip();
-            int writeCount = keyChannel.write(bb); //TODO: возможно (но маловероятно), что-то не запишется, поэтому возможно стоит поставить в селектор
+            int writeCount = keyChannel.write(bb);
         }
         else //connection request
         {
             //формат: 5 1 0 1 5 39 114 78 0 80; 5 - версия протокола; 1 - TCP/IP stream; 0 - reserves; 1 - IPv4 (в случае доменного имени тут будет 3); 5 39 114 78 - IP; 0 80 - порт; NB: если у файрфокса есть в кэше IP-адреса, то понятно, то понятно, что слать он будет их. Поэтому тестировать на новых сайтах!
             if(headerBytes[1] != 1) {
-                //TODO: ответ клиенту!
+
                 return; //по условию задачи, поддерживаем только TCP
             }
 
@@ -216,7 +214,7 @@ public class SOCKSProxyServer
                 }
                 pc.setWhereToWrite(remoteServer);
 
-                byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт!
+                byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт
                 ByteBuffer bb = ByteBuffer.allocate(response.length);
                 bb.put(response);
                 bb.flip();
@@ -249,12 +247,12 @@ public class SOCKSProxyServer
 
     private void processDNSResponse(ByteBuffer buf, SelectionKey key) throws IOException
     {
-        //DatagramChannel keyChannel = (DatagramChannel) key.channel();
+
         dnsServerChannel.read(buf); //а если прочитает не всё?
         Message message = new Message(buf.array());
         Record[] answer = message.getSectionArray(Section.ANSWER);
 
-        String name = null, CNAMEalias = null;
+        String name = null, CNAMEAlias = null, CNAMEName = null;
         InetAddress inetAddress = null;
 
         //CName и A!
@@ -262,24 +260,25 @@ public class SOCKSProxyServer
         {
             if(r.getType() == Type.CNAME)
             {
-                name = r.getName().toString();
-                name = name.substring(0, name.length() - 1);
-                CNAMEalias = ((CNAMERecord)r).getAlias().toString();
-                break;
+                CNAMEName = r.getName().toString();
+                if(name == null)
+                    name = CNAMEName.substring(0, CNAMEName.length() - 1);;
+                CNAMEAlias = ((CNAMERecord)r).getAlias().toString();
+
             }
         }
         for (Record r : answer)
         {
             if(r.getType() == Type.A)
             {
-                String Aalias = r.getName().toString();
+                String AAlias = r.getName().toString();
 
-                if(CNAMEalias != null && Aalias.equals(CNAMEalias))
+                if(CNAMEAlias != null && AAlias.equals(CNAMEAlias))
                 {
                     inetAddress = ((ARecord) r).getAddress();
                     break;
                 }
-                else if (CNAMEalias == null)
+                else if (CNAMEAlias == null)
                 {
                     name = r.getName().toString();
                     name = name.substring(0, name.length() - 1);
@@ -289,11 +288,15 @@ public class SOCKSProxyServer
             }
         }
 
+        //if (inetAddress == null)
+
+
         byte[] addressBytes;
         try {
             addressBytes = inetAddress.getAddress();
         }catch(NullPointerException e)
         {
+            namesToBeResolved.remove(name);
             return;
         }
 
