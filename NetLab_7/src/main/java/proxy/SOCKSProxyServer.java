@@ -3,6 +3,7 @@ package proxy;
 
 import org.xbill.DNS.*;
 
+import java.awt.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -119,19 +120,26 @@ public class SOCKSProxyServer
             } catch (IOException e) {
                 //e.printStackTrace();
                 key.cancel();
+                return;
             }
 
             if (pc.getWhereToWrite() == null) {
                 parseHeaders(buf, key);
             } else {
-                //System.out.println(new String(buf.array(), "UTF-8"));
                 SocketChannel remote = pc.getWhereToWrite();
 
                 buf.flip();
 
                 if (remote.isConnected() && readCount != 0) {
-
-                    int writeCount = remote.write(buf);
+                    int writeCount = 0;
+                    try {
+                        writeCount = remote.write(buf);
+                    }
+                    catch(IOException e)
+                    {
+                        key.cancel();
+                        return;
+                    }
 
                     if (writeCount != readCount) {
                         System.out.println(readCount + " " + writeCount);
@@ -261,14 +269,36 @@ public class SOCKSProxyServer
         Record[] answer = message.getSectionArray(Section.ANSWER);
 
 
-        String name = answer[0].getName().toString();
+        /*String name = answer[0].getName().toString();
         name = name.substring(0, name.length() - 1);
-        InetAddress inetAddress = ((ARecord)answer[0]).getAddress(); //illegal cast?
+        InetAddress inetAddress;
+        try {
+            inetAddress = ((ARecord) answer[0]).getAddress(); //illegal cast?
+        }
+        catch(ClassCastException e)
+        {
+            return;
+        }*/
+        String name = null;
+        InetAddress inetAddress = null;
+        for (Record r : answer)
+        {
+            if(r.getType() == Type.A)
+            {
+                name = r.getName().toString();
+                name = name.substring(0, name.length() - 1);
+                inetAddress = ((ARecord)r).getAddress();
+                break;
+            }
+        }
+
         byte[] addressBytes = inetAddress.getAddress();
 
-        //Iterator it = namesToBeResolved.entrySet().iterator();
-        for(Map.Entry<String, ProxyContext> e : namesToBeResolved.entrySet())
+        Iterator<Map.Entry<String, ProxyContext>> it = namesToBeResolved.entrySet().iterator();
+        //for(Map.Entry<String, ProxyContext> e : namesToBeResolved.entrySet())
+        while(it.hasNext())
         {
+            Map.Entry<String, ProxyContext> e = it.next();
             if (e.getKey().equals(name))
             {
                 SocketChannel remoteServer = SocketChannel.open();
@@ -289,7 +319,7 @@ public class SOCKSProxyServer
                 bb.flip();
                 int writeCount = pc.getFromWhere().write(bb);
 
-                namesToBeResolved.remove(name); //?
+                it.remove(); //?
             }
         }
 
