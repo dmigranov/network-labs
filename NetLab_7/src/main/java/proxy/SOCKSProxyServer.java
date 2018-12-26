@@ -288,17 +288,30 @@ public class SOCKSProxyServer
             }
         }
 
-        //if (inetAddress == null)
+        if (inetAddress == null)
+        {
+            Message messageBack = new Message();
+            Record record = Record.newRecord(new Name(name + "."), Type.A, DClass.IN);
+            message.addRecord(record, Section.QUESTION);
+            message.getHeader().setFlag(Flags.RD);
+
+            byte[] messageBytes = message.toWire();
+            ByteBuffer bb = ByteBuffer.allocate(messageBytes.length);
+            bb.put(messageBytes);
+            bb.flip();
+            dnsServerChannel.send(bb, dnsServerAddress);
+            return;
+        }
 
 
         byte[] addressBytes;
-        try {
+        //try {
             addressBytes = inetAddress.getAddress();
-        }catch(NullPointerException e)
+        /*}catch(NullPointerException e)
         {
             namesToBeResolved.remove(name);
             return;
-        }
+        }*/
 
         Iterator<Map.Entry<String, ProxyContext>> it = namesToBeResolved.entrySet().iterator();
         while(it.hasNext())
