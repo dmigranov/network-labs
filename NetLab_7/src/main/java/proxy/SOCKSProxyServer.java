@@ -32,7 +32,8 @@ public class SOCKSProxyServer
         }
         catch(UnknownHostException e)
         {
-
+            e.printStackTrace();
+            System.exit(10);
         }
     }
 
@@ -52,10 +53,9 @@ public class SOCKSProxyServer
             dnsServerChannel.configureBlocking(false);
             dnsServerChannel.register(selector, SelectionKey.OP_READ);
 
-
             while (true)
             {
-                selector.select(); //возвращает только если хотя бы один channel выбран
+                selector.select();
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
                 Iterator<SelectionKey> iter = selectedKeys.iterator();
 
@@ -75,8 +75,6 @@ public class SOCKSProxyServer
                     iter.remove();
                 }
             }
-
-
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -153,7 +151,6 @@ public class SOCKSProxyServer
 
                     remote.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(buf, pc.getFromWhere(), pc.getWhereToWrite()));
                 }
-
             }
         }
     }
@@ -236,7 +233,6 @@ public class SOCKSProxyServer
             }
             else if(headerBytes[3] == 3) //доменное имя, резолвим
             {
-                //достаём доменное имя
                 byte len = headerBytes[4];
                 byte[] domainBytes = new byte[len];
                 System.arraycopy(headerBytes, 5, domainBytes, 0, len);
@@ -257,7 +253,6 @@ public class SOCKSProxyServer
                 pc.setDestinationPort(port);
                 namesToBeResolved.put(domainName, pc);
             }
-
         }
     }
 
@@ -268,17 +263,6 @@ public class SOCKSProxyServer
         Message message = new Message(buf.array());
         Record[] answer = message.getSectionArray(Section.ANSWER);
 
-
-        /*String name = answer[0].getName().toString();
-        name = name.substring(0, name.length() - 1);
-        InetAddress inetAddress;
-        try {
-            inetAddress = ((ARecord) answer[0]).getAddress(); //illegal cast?
-        }
-        catch(ClassCastException e)
-        {
-            return;
-        }*/
         String name = null;
         InetAddress inetAddress = null;
         for (Record r : answer)
@@ -295,7 +279,6 @@ public class SOCKSProxyServer
         byte[] addressBytes = inetAddress.getAddress();
 
         Iterator<Map.Entry<String, ProxyContext>> it = namesToBeResolved.entrySet().iterator();
-        //for(Map.Entry<String, ProxyContext> e : namesToBeResolved.entrySet())
         while(it.hasNext())
         {
             Map.Entry<String, ProxyContext> e = it.next();
@@ -319,15 +302,9 @@ public class SOCKSProxyServer
                 bb.flip();
                 int writeCount = pc.getFromWhere().write(bb);
 
-                it.remove(); //?
+                it.remove();
             }
         }
-
-
-
-        //TODO: 1) Отправиь ответ клиенту; 2) Каким-то образом добавить в нужный Аттачмент-Контекст найденый и открытый канал (возможно, мапа?!!)
-
-
     }
 }
 
