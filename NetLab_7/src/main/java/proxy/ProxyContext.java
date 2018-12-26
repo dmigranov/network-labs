@@ -7,7 +7,8 @@ public class ProxyContext {
     private ByteBuffer toWrite;
     private SocketChannel whereToWrite;
     private SocketChannel fromWhere;
-    private String domainName = null;
+    private short destinationPort;
+    //private String domainName = null;
 
     ProxyContext() {}
 
@@ -46,11 +47,19 @@ public class ProxyContext {
         return fromWhere;
     }
 
-    public void setDomainName(String domainName) {
+    public short getDestinationPort() {
+        return destinationPort;
+    }
+
+    public void setDestinationPort(short destinationPort) {
+        this.destinationPort = destinationPort;
+    }
+
+    /*public void setDomainName(String domainName) {
         this.domainName = domainName;
     }
 
     public String getDomainName() {
         return domainName;
-    }
+    }*/
 }

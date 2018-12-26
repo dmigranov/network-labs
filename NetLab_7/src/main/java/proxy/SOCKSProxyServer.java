@@ -21,7 +21,7 @@ public class SOCKSProxyServer
     private static final int bufSize = 1024;
     private DatagramChannel dnsServerChannel;
     private InetSocketAddress dnsServerAddress;
-    private Map<String, InetAddress> resolvedNames = new HashMap<>();
+    private Map<String, ProxyContext> namesToBeResolved = new HashMap<>();
     SOCKSProxyServer(int port)
     {
         this.port = port;
@@ -99,7 +99,7 @@ public class SOCKSProxyServer
 
         if (channel == dnsServerChannel)
         {
-            processDNSResponse(buf);
+            processDNSResponse(buf, key);
         }
         else
         {
@@ -233,6 +233,7 @@ public class SOCKSProxyServer
                 byte[] domainBytes = new byte[len];
                 System.arraycopy(headerBytes, 5, domainBytes, 0, len);
                 String domainName = new String(domainBytes, "UTF-8");
+                short port = ByteBuffer.wrap(new byte[]{headerBytes[5 + len], headerBytes[5 + len + 1]}).getShort(); //?
 
                 Message message = new Message();
                 Record record = Record.newRecord(new Name(domainName + "."), Type.A, DClass.IN);
@@ -244,14 +245,15 @@ public class SOCKSProxyServer
                 bb.put(messageBytes);
                 bb.flip();
                 dnsServerChannel.send(bb, dnsServerAddress);
-                pc.setDomainName(domainName);
-            }
 
+                pc.setDestinationPort(port);
+                namesToBeResolved.put(domainName, pc);
+            }
 
         }
     }
 
-    private void processDNSResponse(ByteBuffer buf) throws IOException
+    private void processDNSResponse(ByteBuffer buf, SelectionKey key) throws IOException
     {
         //DatagramChannel keyChannel = (DatagramChannel) key.channel();
         dnsServerChannel.read(buf); //а если прочитает не всё?
@@ -264,37 +266,38 @@ public class SOCKSProxyServer
         InetAddress inetAddress = ((ARecord)answer[0]).getAddress(); //illegal cast?
         byte[] addressBytes = inetAddress.getAddress();
 
-            /*Selector selector =  key.selector();
-            Iterator<SelectionKey> iter = selector.keys().iterator();
-
-            while (iter.hasNext())
+        //Iterator it = namesToBeResolved.entrySet().iterator();
+        for(Map.Entry<String, ProxyContext> e : namesToBeResolved.entrySet())
+        {
+            if (e.getKey().equals(name))
             {
-                //Channel channelIter = keyIter.channel();
-                SelectionKey keyIter = iter.next();
-                if(keyIter.attachment() != null && ((ProxyContext)keyIter.attachment()).getDomainName().equals(name))
+                SocketChannel remoteServer = SocketChannel.open();
+                remoteServer.configureBlocking(false);
+
+                ProxyContext pc = e.getValue();
+                short port = pc.getDestinationPort();
+
+                if (!remoteServer.connect(new InetSocketAddress(InetAddress.getByAddress(addressBytes), port)))
                 {
-                    ProxyContext pc = (ProxyContext)keyIter.attachment();
-                    SocketChannel remoteServer = SocketChannel.open();
-                    remoteServer.configureBlocking(false);
-
-                    if (!remoteServer.connect(new InetSocketAddress(InetAddress.getByAddress(addressBytes), port)))
-                    {
-                        remoteServer.register(selector, SelectionKey.OP_CONNECT, new ProxyContext(remoteServer, pc.getFromWhere())); //
-                    }
-                    pc.setWhereToWrite(remoteServer);
-
-                    byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт!
-                    ByteBuffer bb = ByteBuffer.allocate(response.length);
-                    bb.put(response);
-                    bb.flip();
-                    int writeCount = pc.getFromWhere().write(bb);
+                    remoteServer.register(key.selector(), SelectionKey.OP_CONNECT, new ProxyContext(remoteServer, pc.getFromWhere())); //?
                 }
+                pc.setWhereToWrite(remoteServer);
 
-            }*/
+                byte[] response = new byte[] {5, 0, 0, 1, 0, 0, 0, 0, 0, 0}; //вместо нулей должен быть айпи и порт!
+                ByteBuffer bb = ByteBuffer.allocate(response.length);
+                bb.put(response);
+                bb.flip();
+                int writeCount = pc.getFromWhere().write(bb);
+
+                namesToBeResolved.remove(name); //?
+            }
+        }
+
+
+
         //TODO: 1) Отправиь ответ клиенту; 2) Каким-то образом добавить в нужный Аттачмент-Контекст найденый и открытый канал (возможно, мапа?!!)
 
-        resolvedNames.put(name, InetAddress.getByAddress(addressBytes));
-        //подконнектиться, наверное, прямо сейчас не можеи, так как не знаем порта?
+
     }
 }
 
